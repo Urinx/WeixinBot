@@ -2,7 +2,7 @@
 
 网页版微信API，包含终端版微信及微信机器人
 
-### Demo
+## Demo
 为了运行 `weixin.py` 示例脚本，你需要有安装 `qrcode` 包，你可以通过 `pip install qrcode` 来安装。
 
 ![1](screenshot/1.png)
@@ -39,7 +39,7 @@
 
 注意，以上命令均不包含方括号。
 
-### Web Weixin Pipeline
+## Web Weixin Pipeline
 
 ```
        +--------------+     +---------------+   +---------------+
@@ -68,9 +68,9 @@
 +-------------+
 ```
 
-### Web Weixin API
+## Web Weixin API
 
-#### 登录
+### 登录
 
 | API | 获取 UUID |
 | --- | --------- |
@@ -83,10 +83,12 @@
 ```
 window.QRLogin.code = 200; window.QRLogin.uuid = "xxx"
 ```
+<br>
 
 | API | 生成二维码 |
 | --- | --------- |
 | url | https://login.weixin.qq.com/l/ `uuid` |
+<br>
 
 | API | 二维码扫描登录 |
 | --- | --------- |
@@ -106,6 +108,7 @@ xxx:
 当返回200时，还会有
 window.redirect_uri="https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage?ticket=xxx&uuid=xxx&lang=xxx&scan=xxx";
 ```
+<br>
 
 | API | webwxnewloginpage |
 | --- | --------- |
@@ -125,8 +128,9 @@ window.redirect_uri="https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage?tic
 	<isgrayscale>1</isgrayscale>
 </error>
 ```
+<br>
 
-#### 微信初始化
+### 微信初始化
 
 | API | webwxinit |
 | --- | --------- |
@@ -187,6 +191,7 @@ window.redirect_uri="https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage?tic
 	"ClickReportInterval": 600000
 }
 ```
+<br>
 
 | API | webwxstatusnotify |
 | --- | --------- |
@@ -206,8 +211,9 @@ window.redirect_uri="https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage?tic
 	...
 }
 ```
+<br>
 
-#### 获取联系人信息
+### 获取联系人信息
 
 | API | webwxgetcontact |
 | --- | --------- |
@@ -262,6 +268,7 @@ window.redirect_uri="https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage?tic
 	"Seq": 0
 }
 ```
+<br>
 
 | API | webwxbatchgetcontact |
 | --- | --------- |
@@ -272,8 +279,9 @@ window.redirect_uri="https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage?tic
 | params | { <br> &nbsp;&nbsp;&nbsp;&nbsp; BaseRequest: { Uin: xxx, Sid: xxx, Skey: xxx, DeviceID: xxx }, <br> &nbsp;&nbsp;&nbsp;&nbsp; Count: `群数量`, <br> &nbsp;&nbsp;&nbsp;&nbsp; List: [ <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; { UserName: `群ID`, EncryChatRoomId: "" }, <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ... <br> &nbsp;&nbsp;&nbsp;&nbsp; ], <br> } |
 
 返回数据(JSON)同上
+<br>
 
-#### 同步刷新
+### 同步刷新
 
 | API | synccheck |
 | --- | --------- |
@@ -294,6 +302,7 @@ selector:
 	2 新的消息
 	7 进入/离开聊天界面
 ```
+<br>
 
 | API | webwxsync |
 | --- | --------- |
@@ -349,8 +358,9 @@ selector:
 	...
 }
 ```
+<br>
 
-#### 消息接口
+### 消息接口
 
 | API | webwxsendmsg |
 | --- | --------- |
