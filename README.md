@@ -285,7 +285,7 @@ window.redirect_uri="https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage?tic
 
 | API | synccheck |
 | --- | --------- |
-| url | https://webpush.weixin.qq.com/cgi-bin/mmwebwx-bin/synccheck |
+| url | https://webpush.weixin.qq.com/cgi-bin/mmwebwx-bin/synccheck or <br> https://webpush2.weixin.qq.com/cgi-bin/mmwebwx-bin/synccheck |
 | method | GET |
 | data | URL Encode |
 | params | **r**: `时间戳` <br> **sid**: xxx <br> **uin**: xxx <br> **skey**: xxx <br> **deviceid**: xxx <br> **synckey**: xxx <br> **_**: `时间戳` |
@@ -296,7 +296,7 @@ window.synccheck={retcode:"xxx",selector:"xxx"}
 
 retcode:
 	0 正常
-	1100 登出微信
+	1100 失败/登出微信
 selector:
 	0 正常
 	2 新的消息

@@ -50,6 +50,7 @@ class WebWeixin(object):
 		self.ContactList = []
 		self.GroupList = []
 		self.autoReplyMode = False
+		self.syncHost = ''
 
 		opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookielib.CookieJar()))
 		urllib2.install_opener(opener)
@@ -179,6 +180,13 @@ class WebWeixin(object):
 		# blabla ...
 		return True
 
+	def testsynccheck(self):
+		for host in ['webpush', 'webpush2']:
+			self.syncHost = host
+			[retcode, selector] = self.synccheck()
+			if retcode == '0': return True
+		return False
+
 	def synccheck(self):
 		params = {
 			'r': int(time.time()),
@@ -189,7 +197,7 @@ class WebWeixin(object):
 			'synckey': self.synckey,
 			'_': int(time.time()),
 		}
-		url = 'https://webpush.weixin.qq.com/cgi-bin/mmwebwx-bin/synccheck?' + urllib.urlencode(params)
+		url = 'https://' + self.syncHost + '.weixin.qq.com/cgi-bin/mmwebwx-bin/synccheck?' + urllib.urlencode(params)
 		data = self._get(url)
 		pm = re.search(r'window.synccheck={retcode:"(\d+)",selector:"(\d+)"}', data)
 		retcode = pm.group(1)
@@ -304,6 +312,7 @@ class WebWeixin(object):
 
 	def listenMsgMode(self):
 		print '[*] 进入消息监听模式 ... 成功'
+		self._run('[*] 进行同步线路测试 ... ', self.testsynccheck)
 		playWeChat = 0
 		while True:
 			[retcode, selector] = self.synccheck()
