@@ -239,6 +239,27 @@ class WebWeixin(object):
 		dic = r.json()
 		return dic['BaseResponse']['Ret'] == 0
 
+	def webwxgeticon(self, id):
+		url = self.base_uri + '/webwxgeticon?username=%s&skey=%s' % (id, self.skey)
+		data = self._get(url)
+		fn = 'img_'+id+'.jpg'
+		with open(fn, 'wb') as f: f.write(data)
+		return fn
+
+	def webwxgetheadimg(self, id):
+		url = self.base_uri + '/webwxgetheadimg?username=%s&skey=%s' % (id, self.skey)
+		data = self._get(url)
+		fn = 'img_'+id+'.jpg'
+		with open(fn, 'wb') as f: f.write(data)
+		return fn
+
+	def webwxgetmsgimg(self, msgid):
+		url = self.base_uri + '/webwxgetmsgimg?MsgID=%s&skey=%s' % (msgid, self.skey)
+		data = self._get(url)
+		fn = 'img_'+msgid+'.jpg'
+		with open(fn, 'wb') as f: f.write(data)
+		return fn
+
 	def getUserRemarkName(self, id):
 		name = u'这个人物名字未知'
 		for member in self.MemberList:
@@ -256,9 +277,16 @@ class WebWeixin(object):
 	def handleMsg(self, r):
 		for msg in r['AddMsgList']:
 			print '[*] 你有新的消息，请注意查收'
+
+			if self.DEBUG:
+				fn = 'msg' + str(int(random.random() * 1000)) + '.json'
+				with open(fn, 'w') as f: f.write(json.dumps(msg))
+				print '[*] 该消息已储存到文件: ' + fn
+
 			msgType = msg['MsgType']
 			name = self.getUserRemarkName(msg['FromUserName'])
 			content = msg['Content'].encode('utf-8')
+			msgid = msg['MsgId'].encode('utf-8')
 			if msgType == 51:
 				print '[*] 成功截获微信初始化消息'
 			elif msgType == 1:
@@ -278,7 +306,9 @@ class WebWeixin(object):
 						else:
 							print '自动回复失败'
 			elif msgType == 3:
-				print name+' 给你发送了一张图片，请在手机上查看'
+				img = self.webwxgetmsgimg(msgid)
+				print name+' 给你发送了一张图片: '+img
+				os.system('open %s' % img)
 			elif msgType == 34:
 				print name+' 给你发了一段语音，请在手机上查看'
 			elif msgType == 42:
