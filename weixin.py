@@ -294,6 +294,13 @@ class WebWeixin(object):
 		with open(fn, 'wb') as f: f.write(data)
 		return fn
 
+	def webwxgetvoice(self, msgid):
+		url = self.base_uri + '/webwxgetvoice?msgid=%s&skey=%s' % (msgid, self.skey)
+		data = self._get(url)
+		fn = 'voice_'+msgid+'.mp3'
+		with open(fn, 'wb') as f: f.write(data)
+		return fn
+
 	def getUserRemarkName(self, id):
 		name = '这个人物名字未知'
 		for member in self.MemberList:
@@ -345,10 +352,12 @@ class WebWeixin(object):
 							print '自动回复失败'
 			elif msgType == 3:
 				img = self.webwxgetmsgimg(msgid)
-				print name+' 给你发送了一张图片: '+img
+				print '%s 给你发送了一张图片: %s' % (name, img)
 				os.system('open %s' % img)
 			elif msgType == 34:
-				print name+' 给你发了一段语音，请在手机上查看'
+				voice = self.webwxgetvoice(msgid)
+				print '%s 给你发了一段语音: %s' % (name, voice)
+				os.system('open %s' % voice)
 			elif msgType == 42:
 				info = msg['RecommendInfo']
 				print '%s 给你发送了一张名片:' % name
@@ -360,16 +369,17 @@ class WebWeixin(object):
 				print '========================='
 			elif msgType == 47:
 				url = self._searchContent('cdnurl', content)
-				print name+' 给你发了一个动画表情，点击下面链接查看:'
-				print url
+				print '%s 给你发了一个动画表情，点击下面链接查看:\n%s' % (name, url)
 				os.system('open %s' % url)
 			elif msgType == 49:
+				appMsgType = {5:'链接', 3:'音乐'}
 				content = content.replace('&lt;','<').replace('&gt;','>')
-				print name+' 给你分享了一个链接:'
+				print '%s 给你分享了一个%s:' % (name, appMsgType[msg['AppMsgType']])
 				print '========================='
-				print '= 标题: '+self._searchContent('title', content, 'xml')
-				print '= 描述: '+self._searchContent('des', content, 'xml')
-				print '= 链接: '+self._searchContent('url', content, 'xml')
+				print '= 标题: %s' % msg['FileName']
+				print '= 描述: %s' % self._searchContent('des', content, 'xml')
+				print '= 链接: %s' % msg['Url']
+				print '= 来自: %s' % self._searchContent('appname', content, 'xml')
 				print '========================='
 			elif msgType == 62:
 				print name+' 给你发了一个小视频，请在手机上查看'
