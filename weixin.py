@@ -302,7 +302,7 @@ class WebWeixin(object):
 		return fn
 
 	def getUserRemarkName(self, id):
-		name = '这个人物名字未知'
+		name = '未知群' if id[:2] == '@@' else '陌生人'
 		for member in self.MemberList:
 			if member['UserName'] == id:
 				name = member['RemarkName'] if member['RemarkName'] else member['NickName']
@@ -325,7 +325,7 @@ class WebWeixin(object):
 
 			msgType = msg['MsgType']
 			name = self.getUserRemarkName(msg['FromUserName'])
-			content = msg['Content']
+			content = msg['Content'].replace('&lt;','<').replace('&gt;','>')
 			msgid = msg['MsgId']
 			if msgType == 51:
 				print '[*] 成功截获微信初始化消息'
@@ -339,9 +339,11 @@ class WebWeixin(object):
 					print '%s -> 文件传输助手: %s' % (name, content.replace('<br/>','\n'))
 				elif msg['FromUserName'] == self.User['UserName']:
 					pass
-				elif msg['ToUserName'][:2] == '@@':
+				elif msg['FromUserName'][:2] == '@@':
 					[people, content] = content.split(':<br/>')
-					print '|'+name+'| '+people+':\n'+content.replace('<br/>','\n')
+					group = self.getUserRemarkName(msg['FromUserName'])
+					name = self.getUserRemarkName(people)
+					print '|%s| %s: %s' % (group, name, content.replace('<br/>','\n'))
 				else:
 					print name+': '+content
 					if self.autoReplyMode:
@@ -373,7 +375,6 @@ class WebWeixin(object):
 				os.system('open %s' % url)
 			elif msgType == 49:
 				appMsgType = {5:'链接', 3:'音乐'}
-				content = content.replace('&lt;','<').replace('&gt;','>')
 				print '%s 给你分享了一个%s:' % (name, appMsgType[msg['AppMsgType']])
 				print '========================='
 				print '= 标题: %s' % msg['FileName']
