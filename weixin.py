@@ -17,6 +17,32 @@ def catchKeyboardInterrupt(fn):
 			print '\n[*] 强制退出程序'
 	return wrapper
 
+def _decode_list(data):
+	rv = []
+	for item in data:
+		if isinstance(item, unicode):
+			item = item.encode('utf-8')
+		elif isinstance(item, list):
+			item = _decode_list(item)
+		elif isinstance(item, dict):
+			item = _decode_dict(item)
+		rv.append(item)
+	return rv
+
+def _decode_dict(data):
+	rv = {}
+	for key, value in data.iteritems():
+		if isinstance(key, unicode):
+			key = key.encode('utf-8')
+		if isinstance(value, unicode):
+			value = value.encode('utf-8')
+		elif isinstance(value, list):
+			value = _decode_list(value)
+		elif isinstance(value, dict):
+			value = _decode_dict(value)
+		rv[key] = value
+	return rv
+
 class WebWeixin(object):
 	def __str__(self):
 		description = \
@@ -269,14 +295,13 @@ class WebWeixin(object):
 		return fn
 
 	def getUserRemarkName(self, id):
-		name = u'这个人物名字未知'
+		name = '这个人物名字未知'
 		for member in self.MemberList:
 			if member['UserName'] == id:
 				name = member['RemarkName'] if member['RemarkName'] else member['NickName']
-		return name.encode('utf-8')
+		return name
 
 	def getUSerID(self, name):
-		name = name.decode('utf-8')
 		for member in self.MemberList:
 			if name == member['RemarkName'] or name == member['NickName']:
 				return member['UserName']
@@ -293,8 +318,8 @@ class WebWeixin(object):
 
 			msgType = msg['MsgType']
 			name = self.getUserRemarkName(msg['FromUserName'])
-			content = msg['Content'].encode('utf-8')
-			msgid = msg['MsgId'].encode('utf-8')
+			content = msg['Content']
+			msgid = msg['MsgId']
 			if msgType == 51:
 				print '[*] 成功截获微信初始化消息'
 			elif msgType == 1:
@@ -325,12 +350,13 @@ class WebWeixin(object):
 			elif msgType == 34:
 				print name+' 给你发了一段语音，请在手机上查看'
 			elif msgType == 42:
-				print name+' 给你发送了一张名片:'
+				info = msg['RecommendInfo']
+				print '%s 给你发送了一张名片:' % name
 				print '========================='
-				print '= 昵称: '+self._searchContent('nickname', content)
-				print '= 微信号: '+self._searchContent('alias', content)
-				print '= 地区: '+self._searchContent('province', content)+' '+self._searchContent('city', content)
-				print '= 性别: '+( '男' if self._searchContent('sex', content)=='1' else '女' )
+				print '= 昵称: %s' % info['NickName']
+				print '= 微信号: %s' % info['Alias']
+				print '= 地区: %s %s' % (info['Province'], info['City'])
+				print '= 性别: %s' % ['未知', '男', '女'][info['Sex']]
 				print '========================='
 			elif msgType == 47:
 				url = self._searchContent('cdnurl', content)
@@ -479,7 +505,7 @@ class WebWeixin(object):
 			request = urllib2.Request(url = url, data = urllib.urlencode(params))
 		response = urllib2.urlopen(request)
 		data = response.read()
-		if jsonfmt: return json.loads(data)
+		if jsonfmt: return json.loads(data, object_hook=_decode_dict)
 		return data
 
 	def _xiaodoubi(self, word):
