@@ -260,6 +260,14 @@ class WebWeixin(object):
 		with open(fn, 'wb') as f: f.write(data)
 		return fn
 
+	# Not work now for weixin haven't support this API
+	def webwxgetvideo(self, msgid):
+		url = self.base_uri + '/webwxgetvideo?msgid=%s&skey=%s' % (msgid, self.skey)
+		data = self._get(url)
+		fn = 'video_'+msgid+'.mp4'
+		with open(fn, 'wb') as f: f.write(data)
+		return fn
+
 	def getUserRemarkName(self, id):
 		name = u'这个人物名字未知'
 		for member in self.MemberList:
