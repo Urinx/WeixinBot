@@ -298,8 +298,13 @@ class WebWeixin(object):
 			if msgType == 51:
 				print '[*] 成功截获微信初始化消息'
 			elif msgType == 1:
-				if msg['ToUserName'] == 'filehelper':
-					print name+' -> 文件传输助手: '+content.replace('<br/>','\n')
+				if content.find('http://weixin.qq.com/cgi-bin/redirectforward?args=') != -1:
+					# 地理位置消息
+					data = self._get(content).decode('gbk').encode('utf-8')
+					pos = self._searchContent('title', data, 'xml')
+					print '%s 给你发送了一个位置消息 [我在%s]' % (name, pos)
+				elif msg['ToUserName'] == 'filehelper':
+					print '%s -> 文件传输助手: %s' % (name, content.replace('<br/>','\n'))
 				elif msg['FromUserName'] == self.User['UserName']:
 					pass
 				elif msg['ToUserName'][:2] == '@@':
