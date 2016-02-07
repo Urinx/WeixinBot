@@ -8,6 +8,8 @@ import xml.dom.minidom
 import json
 import time, re, sys, os, random
 import multiprocessing
+import platform
+from collections import defaultdict
 
 def catchKeyboardInterrupt(fn):
 	def wrapper(*args):
@@ -177,7 +179,7 @@ class WebWeixin(object):
 		url = self.base_uri + '/webwxgetcontact?pass_ticket=%s&skey=%s&r=%s' % (self.pass_ticket, self.skey, int(time.time()))
 		dic = self._post(url, {})
 		self.MemberList = dic['MemberList']
-		
+
 		ContactList = self.MemberList[:]
 		SpecialUsers = ['newsapp', 'fmessage', 'filehelper', 'weibo', 'qqmail', 'fmessage', 'tmessage', 'qmessage', 'qqsync', 'floatbottle', 'lbsapp', 'shakeapp', 'medianote', 'qqfriend', 'readerapp', 'blogapp', 'facebookapp', 'masssendapp', 'meishiapp', 'feedsapp', 'voip', 'blogappweixin', 'weixin', 'brandsessionholder', 'weixinreminder', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'officialaccounts', 'notification_messages', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'wxitil', 'userexperience_alarm', 'notification_messages']
 		for i in xrange(len(ContactList) - 1, -1, -1):
@@ -238,7 +240,8 @@ class WebWeixin(object):
 			'rr': ~int(time.time())
 		}
 		dic = self._post(url, params)
-		if self.DEBUG: print dic
+		if self.DEBUG:
+			print json.dumps(dic, indent=4)
 
 		if dic['BaseResponse']['Ret'] == 0:
 			self.SyncKey = dic['SyncKey']
@@ -353,13 +356,13 @@ class WebWeixin(object):
 						else:
 							print '自动回复失败'
 			elif msgType == 3:
-				img = self.webwxgetmsgimg(msgid)
-				print '%s 给你发送了一张图片: %s' % (name, img)
-				os.system('open %s' % img)
+				image = self.webwxgetmsgimg(msgid)
+				print '%s 给你发送了一张图片: %s' % (name, image)
+				self._safe_open(image)
 			elif msgType == 34:
 				voice = self.webwxgetvoice(msgid)
 				print '%s 给你发了一段语音: %s' % (name, voice)
-				os.system('open %s' % voice)
+				self._safe_open(voice)
 			elif msgType == 42:
 				info = msg['RecommendInfo']
 				print '%s 给你发送了一张名片:' % name
@@ -372,9 +375,10 @@ class WebWeixin(object):
 			elif msgType == 47:
 				url = self._searchContent('cdnurl', content)
 				print '%s 给你发了一个动画表情，点击下面链接查看:\n%s' % (name, url)
-				os.system('open %s' % url)
+				self._safe_open(url)
 			elif msgType == 49:
-				appMsgType = {5:'链接', 3:'音乐'}
+				appMsgType = defaultdict(lambda : "")
+				appMsgType.update({5:'链接', 3:'音乐', 7:'微博'})
 				print '%s 给你分享了一个%s:' % (name, appMsgType[msg['AppMsgType']])
 				print '========================='
 				print '= 标题: %s' % msg['FileName']
@@ -451,7 +455,7 @@ class WebWeixin(object):
 			print '[*] 自动回复模式 ... 开启'
 		else:
 			print '[*] 自动回复模式 ... 关闭'
-		
+
 		listenProcess = multiprocessing.Process(target=self.listenMsgMode)
 		listenProcess.start()
 
@@ -470,6 +474,12 @@ class WebWeixin(object):
 				print '发送文件'
 			elif text[:3] == 'i->':
 				print '发送图片'
+
+	def _safe_open(self, path):
+		if platform.system() == "Linux":
+		    os.system("xdg-open %s &" % path)
+		else:
+			os.system('open %s &' % path)
 
 	def _run(self, str, func, *args):
 		self._echo(str)
