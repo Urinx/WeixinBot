@@ -464,8 +464,8 @@ selector:
 	"SubMsgType": 0
 }
 ```
-
 <br>
+
 | MsgType | 说明 |
 | ------- | --- |
 | 1  | 文本消息 |
