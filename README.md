@@ -389,12 +389,14 @@ selector:
 | url | https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxgeticon |
 | method | GET |
 | params | **seq**: `数字，可为空` <br> **username**: `ID` <br> **skey**: xxx |
+<br>
 
 | API | webwxgetheadimg |
 | --- | --------------- |
 | url | https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxgetheadimg |
 | method | GET |
 | params | **seq**: `数字，可为空` <br> **username**: `群ID` <br> **skey**: xxx |
+<br>
 
 | API | webwxgetmsgimg |
 | --- | --------------- |
@@ -410,6 +412,7 @@ selector:
 | url | https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxgetvideo |
 | method | GET |
 | params | **msgid**: `消息ID` <br> **skey**: xxx |
+<br>
 
 | API | webwxgetvoice |
 | --- | --------------- |
@@ -462,6 +465,7 @@ selector:
 }
 ```
 
+<br>
 | MsgType | 说明 |
 | ------- | --- |
 | 1  | 文本消息 |
@@ -482,6 +486,7 @@ selector:
 | 9999 | SYSNOTICE |
 | 10000 | SYS |
 | 10002 | 撤回消息 |
+<br>
 
 **微信初始化消息**
 ```html
@@ -636,7 +641,7 @@ Content:
 ```
 
 **音乐链接消息**
-```
+```html
 MsgType: 49
 AppMsgType: 3
 FromUserName: 发送方ID
@@ -715,4 +720,13 @@ Content:
 	blablabla ...
 ```
 
-## 持续更新中 ...
+持续更新中 ...
+
+## Todo
+- [ ] 发送图片或者文件功能
+- [ ] 主动给群聊发送消息
+- [ ] 建立群聊
+- [ ] 群发消息
+- [ ] 补充更多的接口及完善文档
+
+P.S. 还有啥要补充的也可以在[issue #8](https://github.com/Urinx/WeixinBot/issues/8)下留言
