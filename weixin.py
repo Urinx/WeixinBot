@@ -209,7 +209,16 @@ class WebWeixin(object):
 		return True
 
 	def testsynccheck(self):
-		for host in ['webpush', 'webpush2']:
+		SyncHost = [
+			'webpush.weixin.qq.com',
+			'webpush2.weixin.qq.com',
+			'webpush.wechat.com',
+			'webpush1.wechat.com',
+			'webpush2.wechat.com',
+			'webpush.wechatapp.com',
+			'webpush1.wechatapp.com'
+		]
+		for host in SyncHost:
 			self.syncHost = host
 			[retcode, selector] = self.synccheck()
 			if retcode == '0': return True
@@ -225,7 +234,7 @@ class WebWeixin(object):
 			'synckey': self.synckey,
 			'_': int(time.time()),
 		}
-		url = 'https://' + self.syncHost + '.weixin.qq.com/cgi-bin/mmwebwx-bin/synccheck?' + urllib.urlencode(params)
+		url = 'https://' + self.syncHost + '/cgi-bin/mmwebwx-bin/synccheck?' + urllib.urlencode(params)
 		data = self._get(url)
 		pm = re.search(r'window.synccheck={retcode:"(\d+)",selector:"(\d+)"}', data)
 		retcode = pm.group(1)
@@ -306,6 +315,7 @@ class WebWeixin(object):
 
 	def getUserRemarkName(self, id):
 		name = '未知群' if id[:2] == '@@' else '陌生人'
+		if id == self.User['UserName']: return self.User['NickName']
 		for member in self.MemberList:
 			if member['UserName'] == id:
 				name = member['RemarkName'] if member['RemarkName'] else member['NickName']
