@@ -101,7 +101,24 @@ class WebWeixin(object):
 		return False
 
 	def genQRCode(self):
-		self._str2qr('https://login.weixin.qq.com/l/' + self.uuid)
+		if sys.platform.find('win') >= 0:
+			self._showQRCodeImg()
+		else:
+			self._str2qr('https://login.weixin.qq.com/l/' + self.uuid)
+
+	def _showQRCodeImg(self):
+		QRCODE_PATH = os.path.join(os.getcwd(),'qrcode.jpg')
+		url = 'https://login.weixin.qq.com/qrcode/' + self.uuid
+		params = {
+			't' : 'webwx',
+			'_' : int(time.time())
+		}
+
+		data = self._post(url,params,False)
+		with open(QRCODE_PATH, 'wb') as f:
+			f.write(data)
+
+		os.startfile(QRCODE_PATH)
 
 	def waitForLogin(self, tip = 1):
 		time.sleep(tip)
@@ -215,8 +232,8 @@ class WebWeixin(object):
 			'webpush.wechat.com',
 			'webpush1.wechat.com',
 			'webpush2.wechat.com',
-			'webpush.wechatapp.com',
-			'webpush1.wechatapp.com'
+			'webpush1.wechatapp.com',
+			# 'webpush.wechatapp.com'
 		]
 		for host in SyncHost:
 			self.syncHost = host
@@ -484,7 +501,8 @@ class WebWeixin(object):
 			text = raw_input('')
 			if text == 'quit':
 				listenProcess.terminate()
-				exit('[*] 退出微信')
+				print('[*] 退出微信')
+				exit()
 			elif text[:2] == '->':
 				[name, word] = text[2:].split(':')
 				if name == 'all': self.sendMsgToAll(word)
@@ -506,7 +524,7 @@ class WebWeixin(object):
 	def _run(self, str, func, *args):
 		self._echo(str)
 		if func(*args): print '成功'
-		else: exit('失败\n[*] 退出程序')
+		else: print('失败\n[*] 退出程序');exit()
 
 	def _echo(self, str):
 		sys.stdout.write(str)
@@ -589,9 +607,13 @@ class UnicodeStreamFilter:
 		s = s.encode(self.encode_to, self.errors).decode(self.encode_to)
 		self.target.write(s)
 
-if __name__ == '__main__':
-	if sys.stdout.encoding == 'cp936':
-		sys.stdout = UnicodeStreamFilter(sys.stdout)
+	def flush(self):
+		self.target.flush()
 
+if sys.stdout.encoding == 'cp936':
+	sys.stdout = UnicodeStreamFilter(sys.stdout)
+
+
+if __name__ == '__main__':
 	webwx = WebWeixin()
 	webwx.start()
