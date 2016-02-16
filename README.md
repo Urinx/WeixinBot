@@ -285,7 +285,9 @@ window.redirect_uri="https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage?tic
 
 | API | synccheck |
 | --- | --------- |
-| url | https://webpush.weixin.qq.com/cgi-bin/mmwebwx-bin/synccheck or <br> https://webpush2.weixin.qq.com/cgi-bin/mmwebwx-bin/synccheck |
+| protocol | https |
+| host | webpush.weixin.qq.com <br> webpush2.weixin.qq.com <br> webpush.wechat.com <br> webpush1.wechat.com <br> webpush2.wechat.com <br> webpush.wechatapp.com <br> webpush1.wechatapp.com |
+| path | /cgi-bin/mmwebwx-bin/synccheck |
 | method | GET |
 | data | URL Encode |
 | params | **r**: `时间戳` <br> **sid**: xxx <br> **uin**: xxx <br> **skey**: xxx <br> **deviceid**: xxx <br> **synckey**: xxx <br> **_**: `时间戳` |
@@ -484,7 +486,7 @@ selector:
 | 53 | VOIPINVITE |
 | 62 | 小视频 |
 | 9999 | SYSNOTICE |
-| 10000 | SYS |
+| 10000 | 系统消息 |
 | 10002 | 撤回消息 |
 <br>
 
@@ -716,8 +718,19 @@ MsgType: 49
 AppMsgType: 2001
 FromUserName: 发送方ID
 ToUserName: 接收方ID
+Content: 未知
+```
+注：根据网页版的代码可以看到未来可能支持查看红包消息，但目前走的是系统消息，见下。
+
+**系统消息**
+```
+MsgType: 10000
+FromUserName: 发送方ID
+ToUserName: 自己ID
 Content:
-	blablabla ...
+	"你已添加了 xxx ，现在可以开始聊天了。"
+	"如果陌生人主动添加你为朋友，请谨慎核实对方身份。"
+	"收到红包，请在手机上查看"
 ```
 
 持续更新中 ...
@@ -726,7 +739,7 @@ Content:
 - [ ] 发送图片或者文件功能
 - [ ] 主动给群聊发送消息
 - [ ] 建立群聊
-- [ ] 群发消息
+- [x] 群发消息
 - [ ] 补充更多的接口及完善文档
 
 P.S. 还有啥要补充的也可以在[issue #8](https://github.com/Urinx/WeixinBot/issues/8)下留言
