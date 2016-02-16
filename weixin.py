@@ -232,8 +232,8 @@ class WebWeixin(object):
 			'webpush.wechat.com',
 			'webpush1.wechat.com',
 			'webpush2.wechat.com',
-			'webpush.wechatapp.com',
-			'webpush1.wechatapp.com'
+			'webpush1.wechatapp.com',
+			# 'webpush.wechatapp.com'
 		]
 		for host in SyncHost:
 			self.syncHost = host
@@ -501,7 +501,8 @@ class WebWeixin(object):
 			text = raw_input('')
 			if text == 'quit':
 				listenProcess.terminate()
-				exit('[*] 退出微信')
+				print('[*] 退出微信')
+				exit()
 			elif text[:2] == '->':
 				[name, word] = text[2:].split(':')
 				if name == 'all': self.sendMsgToAll(word)
@@ -523,7 +524,7 @@ class WebWeixin(object):
 	def _run(self, str, func, *args):
 		self._echo(str)
 		if func(*args): print '成功'
-		else: exit('失败\n[*] 退出程序')
+		else: print('失败\n[*] 退出程序');exit()
 
 	def _echo(self, str):
 		sys.stdout.write(str)
@@ -609,9 +610,10 @@ class UnicodeStreamFilter:
 	def flush(self):
 		self.target.flush()
 
-if __name__ == '__main__':
-	if sys.stdout.encoding == 'cp936':
-		sys.stdout = UnicodeStreamFilter(sys.stdout)
+if sys.stdout.encoding == 'cp936':
+	sys.stdout = UnicodeStreamFilter(sys.stdout)
 
+
+if __name__ == '__main__':
 	webwx = WebWeixin()
 	webwx.start()
