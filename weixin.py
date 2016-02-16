@@ -436,6 +436,17 @@ class WebWeixin(object):
 		else:
 			print '[*] 此用户不存在'
 
+	def sendMsgToAll(self, word):
+		for contact in self.ContactList:
+			name = contact['RemarkName'] if contact['RemarkName'] else contact['NickName']
+			id = contact['UserName']
+			self._echo('-> '+name+': '+word)
+			if self.webwxsendmsg(word, id):
+				print ' [成功]'
+			else:
+				print ' [失败]'
+			time.sleep(1)
+
 	@catchKeyboardInterrupt
 	def start(self):
 		print '[*] 微信网页版 ... 开动'
@@ -466,7 +477,8 @@ class WebWeixin(object):
 				exit('[*] 退出微信')
 			elif text[:2] == '->':
 				[name, word] = text[2:].split(':')
-				self.sendMsg(name, word)
+				if name == 'all': self.sendMsgToAll(word)
+				else: self.sendMsg(name, word)
 			elif text[:3] == 'm->':
 				[name, file] = text[3:].split(':')
 				self.sendMsg(name, file, True)
