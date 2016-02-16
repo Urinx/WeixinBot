@@ -101,7 +101,24 @@ class WebWeixin(object):
 		return False
 
 	def genQRCode(self):
-		self._str2qr('https://login.weixin.qq.com/l/' + self.uuid)
+		if sys.platform.find('win') >= 0:
+			self._showQRCodeImg()
+		else:
+			self._str2qr('https://login.weixin.qq.com/l/' + self.uuid)
+
+	def _showQRCodeImg(self):
+		QRCODE_PATH = os.path.join(os.getcwd(),'qrcode.jpg')
+		url = 'https://login.weixin.qq.com/qrcode/' + self.uuid
+		params = {
+			't' : 'webwx',
+			'_' : int(time.time())
+		}
+
+		data = self._post(url,params,False)
+		with open(QRCODE_PATH, 'wb') as f:
+			f.write(data)
+
+		os.startfile(QRCODE_PATH)
 
 	def waitForLogin(self, tip = 1):
 		time.sleep(tip)
@@ -588,6 +605,9 @@ class UnicodeStreamFilter:
 			s = s.decode('utf-8')
 		s = s.encode(self.encode_to, self.errors).decode(self.encode_to)
 		self.target.write(s)
+
+	def flush(self):
+		self.target.flush()
 
 if __name__ == '__main__':
 	if sys.stdout.encoding == 'cp936':
