@@ -414,7 +414,9 @@ class WebWeixin(object):
 				print '= 来自: %s' % self._searchContent('appname', content, 'xml')
 				print '========================='
 			elif msgType == 62:
+				video = self.webwxgetvideo(msgid)
 				print name+' 给你发了一个小视频，请在手机上查看'
+				self._safe_open(video)
 			elif msgType == 10002:
 				print name+' 撤回消息'
 			else:
@@ -552,8 +554,10 @@ class WebWeixin(object):
 			result = data.decode('utf-8')
 		return result
 
-	def _get(self, url):
+	def _get(self, url, api=None):
 		request = urllib2.Request(url = url)
+		if api == 'webwxgetvoice': request.add_header('Range', 'bytes=0-')
+		if api == 'webwxgetvideo': request.add_header('Range', 'bytes=0-')
 		response = urllib2.urlopen(request)
 		data = response.read()
 		return data
