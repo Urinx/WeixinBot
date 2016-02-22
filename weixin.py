@@ -81,8 +81,10 @@ class WebWeixin(object):
 		self.GroupList = []
 		self.autoReplyMode = False
 		self.syncHost = ''
+		self.user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36'
 
 		opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookielib.CookieJar()))
+		opener.addheaders = [('User-agent', self.user_agent)]
 		urllib2.install_opener(opener)
 
 	def getUUID(self):
