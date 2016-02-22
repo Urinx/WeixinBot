@@ -9,6 +9,7 @@ import json
 import time, re, sys, os, random
 import multiprocessing
 import platform
+import logging
 from collections import defaultdict
 
 def catchKeyboardInterrupt(fn):
@@ -17,6 +18,7 @@ def catchKeyboardInterrupt(fn):
 			return fn(*args)
 		except KeyboardInterrupt:
 			print '\n[*] 强制退出程序'
+			logging.debug('[*] 强制退出程序')
 	return wrapper
 
 def _decode_list(data):
@@ -268,6 +270,7 @@ class WebWeixin(object):
 		dic = self._post(url, params)
 		if self.DEBUG:
 			print json.dumps(dic, indent=4)
+			logging.debug(json.dumps(dic, indent=4))
 
 		if dic['BaseResponse']['Ret'] == 0:
 			self.SyncKey = dic['SyncKey']
@@ -318,7 +321,7 @@ class WebWeixin(object):
 	# Not work now for weixin haven't support this API
 	def webwxgetvideo(self, msgid):
 		url = self.base_uri + '/webwxgetvideo?msgid=%s&skey=%s' % (msgid, self.skey)
-		data = self._get(url)
+		data = self._get(url, api='webwxgetvideo')
 		fn = 'video_'+msgid+'.mp4'
 		with open(fn, 'wb') as f: f.write(data)
 		return fn
@@ -347,11 +350,13 @@ class WebWeixin(object):
 	def handleMsg(self, r):
 		for msg in r['AddMsgList']:
 			print '[*] 你有新的消息，请注意查收'
+			logging.debug('[*] 你有新的消息，请注意查收')
 
 			if self.DEBUG:
 				fn = 'msg' + str(int(random.random() * 1000)) + '.json'
 				with open(fn, 'w') as f: f.write(json.dumps(msg))
 				print '[*] 该消息已储存到文件: ' + fn
+				logging.debug('[*] 该消息已储存到文件: %s' % (fn))
 
 			msgType = msg['MsgType']
 			name = self.getUserRemarkName(msg['FromUserName'])
@@ -359,36 +364,45 @@ class WebWeixin(object):
 			msgid = msg['MsgId']
 			if msgType == 51:
 				print '[*] 成功截获微信初始化消息'
+				logging.debug('[*] 成功截获微信初始化消息')
 			elif msgType == 1:
 				if content.find('http://weixin.qq.com/cgi-bin/redirectforward?args=') != -1:
 					# 地理位置消息
 					data = self._get(content).decode('gbk').encode('utf-8')
 					pos = self._searchContent('title', data, 'xml')
 					print '%s 给你发送了一个位置消息 [我在%s]' % (name, pos)
+					logging.info('%s 给你发送了一个位置消息 [我在%s]' % (name, pos))
 				elif msg['ToUserName'] == 'filehelper':
 					print '%s -> 文件传输助手: %s' % (name, content.replace('<br/>','\n'))
+					logging.info('%s -> 文件传输助手: %s' % (name, content.replace('<br/>','\n')))
 				elif msg['FromUserName'] == self.User['UserName']:
 					pass
 				elif msg['FromUserName'][:2] == '@@':
 					[people, content] = content.split(':<br/>')
 					group = self.getUserRemarkName(msg['FromUserName'])
 					name = self.getUserRemarkName(people)
-					print '|%s| %s: %s' % (group, name, content.replace('<br/>','\n'))
+					print '|%s| %s: %s' % (group.strip(), name.strip(), content.replace('<br/>','\n'))
+					logging.info('|%s| %s: %s' % (group.strip(), name.strip(), content.replace('<br/>','\n')))
 				else:
 					print name+': '+content
+					logging.info(name+': '+content)
 					if self.autoReplyMode:
 						ans = self._xiaodoubi(content)+'\n[微信机器人自动回复]'
 						if self.webwxsendmsg(ans, msg['FromUserName']):
 							print '自动回复: '+ans
+							logging.info('自动回复: '+ans)
 						else:
 							print '自动回复失败'
+							logging.info('自动回复失败')
 			elif msgType == 3:
 				image = self.webwxgetmsgimg(msgid)
 				print '%s 给你发送了一张图片: %s' % (name, image)
+				logging.info('%s 给你发送了一张图片: %s' % (name, image))
 				self._safe_open(image)
 			elif msgType == 34:
 				voice = self.webwxgetvoice(msgid)
 				print '%s 给你发了一段语音: %s' % (name, voice)
+				logging.info('%s 给你发送了一张图片: %s' % (name, image))
 				self._safe_open(voice)
 			elif msgType == 42:
 				info = msg['RecommendInfo']
@@ -399,9 +413,11 @@ class WebWeixin(object):
 				print '= 地区: %s %s' % (info['Province'], info['City'])
 				print '= 性别: %s' % ['未知', '男', '女'][info['Sex']]
 				print '========================='
+				logging.info('%s 给你发送了一张名片: %s' % (name.strip(), json.dumps(info)))
 			elif msgType == 47:
 				url = self._searchContent('cdnurl', content)
 				print '%s 给你发了一个动画表情，点击下面链接查看:\n%s' % (name, url)
+				logging.info('%s 给你发了一个动画表情，点击下面链接查看:\n%s' % (name, url))
 				self._safe_open(url)
 			elif msgType == 49:
 				appMsgType = defaultdict(lambda : "")
@@ -413,25 +429,32 @@ class WebWeixin(object):
 				print '= 链接: %s' % msg['Url']
 				print '= 来自: %s' % self._searchContent('appname', content, 'xml')
 				print '========================='
+				string = "%s 给你分享了一个%s:" % (name, appMsgType[msg['AppMsgType']])
 			elif msgType == 62:
-				video = self.webwxgetvideo(msgid)
 				print name+' 给你发了一个小视频，请在手机上查看'
+				logging.info(name+' 给你发了一个小视频，请在手机上查看')
+				video = self.webwxgetvideo(msgid)
 				self._safe_open(video)
 			elif msgType == 10002:
 				print name+' 撤回消息'
+				logging.info(name+' 撤回消息')
 			else:
 				print '[*] 该消息类型为: %d，可能是表情，图片或链接' % msg['MsgType']
 				print msg
+				logging.debug('[*] 该消息类型为: %d，可能是表情，图片或链接: ' % (msg['MsgType'], json.dumps(msg)))
 
 	def listenMsgMode(self):
 		print '[*] 进入消息监听模式 ... 成功'
+		logging.debug('[*] 进入消息监听模式 ... 成功')
 		self._run('[*] 进行同步线路测试 ... ', self.testsynccheck)
 		playWeChat = 0
 		while True:
 			[retcode, selector] = self.synccheck()
 			if self.DEBUG: print 'retcode: %s, selector: %s' % (retcode, selector)
+			logging.debug('retcode: %s, selector: %s' % (retcode, selector))
 			if retcode == '1100':
 				print '[*] 你在手机上登出了微信，债见'
+				logging.debug('[*] 你在手机上登出了微信，债见')
 				break
 			elif retcode == '0':
 				if selector == '2':
@@ -440,6 +463,7 @@ class WebWeixin(object):
 				elif selector == '7':
 					playWeChat += 1
 					print '[*] 你在手机上玩微信被我发现了 %d 次' % playWeChat
+					logging.debug('[*] 你在手机上玩微信被我发现了 %d 次' % playWeChat)
 					r = self.webwxsync()
 				elif selector == '0':
 					time.sleep(1)
@@ -460,10 +484,13 @@ class WebWeixin(object):
 			else:
 				if self.webwxsendmsg(word, id):
 					print '[*] 消息发送成功'
+					logging.debug('[*] 消息发送成功')
 				else:
 					print '[*] 消息发送失败'
+					logging.debug('[*] 消息发送失败')
 		else:
 			print '[*] 此用户不存在'
+			logging.debug('[*] 此用户不存在')
 
 	def sendMsgToAll(self, word):
 		for contact in self.ContactList:
@@ -478,23 +505,26 @@ class WebWeixin(object):
 
 	@catchKeyboardInterrupt
 	def start(self):
-		print '[*] 微信网页版 ... 开动'
+		self._echo('[*] 微信网页版 ... 开动'); print; logging.debug('[*] 微信网页版 ... 开动')
 		self._run('[*] 正在获取 uuid ... ', self.getUUID)
-		print '[*] 正在获取二维码 ... 成功'; self.genQRCode()
+		self._echo('[*] 正在获取二维码 ... 成功'); print; logging.debug('[*] 微信网页版 ... 开动'); self.genQRCode()
 		self._run('[*] 请使用微信扫描二维码以登录 ... ', self.waitForLogin)
 		self._run('[*] 请在手机上点击确认以登录 ... ', self.waitForLogin, 0)
 		self._run('[*] 正在登录 ... ', self.login)
 		self._run('[*] 微信初始化 ... ', self.webwxinit)
 		self._run('[*] 开启状态通知 ... ', self.webwxstatusnotify)
 		self._run('[*] 获取联系人 ... ', self.webwxgetcontact)
-		print '[*] 共有 %d 位联系人' % len(self.ContactList)
+		self._echo('[*] 共有 %d 位联系人' % len(self.ContactList)); print; logging.debug('[*] 微信网页版 ... 开动')
 		if self.DEBUG: print self
+		logging.debug(self)
 
 		if raw_input('[*] 是否开启自动回复模式(y/n): ') == 'y':
 			self.autoReplyMode = True
 			print '[*] 自动回复模式 ... 开启'
+			logging.debug('[*] 自动回复模式 ... 开启')
 		else:
 			print '[*] 自动回复模式 ... 关闭'
+			logging.debug('[*] 自动回复模式 ... 关闭')
 
 		listenProcess = multiprocessing.Process(target=self.listenMsgMode)
 		listenProcess.start()
@@ -504,6 +534,7 @@ class WebWeixin(object):
 			if text == 'quit':
 				listenProcess.terminate()
 				print('[*] 退出微信')
+				logging.debug('[*] 退出微信')
 				exit()
 			elif text[:2] == '->':
 				[name, word] = text[2:].split(':')
@@ -514,8 +545,10 @@ class WebWeixin(object):
 				self.sendMsg(name, file, True)
 			elif text[:3] == 'f->':
 				print '发送文件'
+				logging.debug('发送文件')
 			elif text[:3] == 'i->':
 				print '发送图片'
+				logging.debug('发送图片')
 
 	def _safe_open(self, path):
 		if platform.system() == "Linux":
@@ -525,8 +558,8 @@ class WebWeixin(object):
 
 	def _run(self, str, func, *args):
 		self._echo(str)
-		if func(*args): print '成功'
-		else: print('失败\n[*] 退出程序');exit()
+		if func(*args): print '成功'; logging.debug('%s... 开启' % (str))
+		else: print('失败\n[*] 退出程序'); logging.debug('%s... 失败' % (str)); logging.debug('[*] 退出程序'); exit()
 
 	def _echo(self, str):
 		sys.stdout.write(str)
@@ -560,6 +593,7 @@ class WebWeixin(object):
 		if api == 'webwxgetvideo': request.add_header('Range', 'bytes=0-')
 		response = urllib2.urlopen(request)
 		data = response.read()
+		logging.debug(url)
 		return data
 
 	def _post(self, url, params, jsonfmt = True):
@@ -619,5 +653,10 @@ if sys.stdout.encoding == 'cp936':
 
 
 if __name__ == '__main__':
+
+	logger = logging.getLogger(__name__)
+	import coloredlogs
+	coloredlogs.install(level='DEBUG')
+
 	webwx = WebWeixin()
 	webwx.start()
