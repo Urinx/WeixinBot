@@ -84,6 +84,8 @@ class WebWeixin(object):
 		self.user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36'
 		self.interactive = False
 		self.autoOpen = False
+		self.saveFolder = os.path.join(os.getcwd(), 'saved')
+		self.saveSubFolders = {'webwxgeticon': 'icons', 'webwxgetheadimg': 'headimgs', 'webwxgetmsgimg': 'msgimgs', 'webwxgetvideo': 'videos', 'webwxgetvoice': 'voices'}
 		self.appid = 'wx782c26e4c19acffb'
 		self.lang = 'zh_CN'
 
@@ -102,9 +104,9 @@ class WebWeixin(object):
 	def getUUID(self):
 		url = 'https://login.weixin.qq.com/jslogin'
 		params = {
-			'appid': 'wx782c26e4c19acffb',
+			'appid': self.appid,
 			'fun': 'new',
-			'lang': 'zh_CN',
+			'lang': self.lang,
 			'_': int(time.time()),
 		}
 		data = self._post(url, params, False)
