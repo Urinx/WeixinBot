@@ -609,6 +609,7 @@ class WebWeixin(object):
 
 	def _get(self, url, api=None):
 		request = urllib2.Request(url = url)
+		request.add_header('Referer', 'https://wx.qq.com/')
 		if api == 'webwxgetvoice': request.add_header('Range', 'bytes=0-')
 		if api == 'webwxgetvideo': request.add_header('Range', 'bytes=0-')
 		response = urllib2.urlopen(request)
