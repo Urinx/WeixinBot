@@ -85,7 +85,7 @@ class WebWeixin(object):
 		self.interactive = False
 		self.autoOpen = False
 		self.saveFolder = os.path.join(os.getcwd(), 'saved')
-		self.saveSubFolders = {'webwxgeticon': 'icons', 'webwxgetheadimg': 'headimgs', 'webwxgetmsgimg': 'msgimgs', 'webwxgetvideo': 'videos', 'webwxgetvoice': 'voices'}
+		self.saveSubFolders = {'webwxgeticon': 'icons', 'webwxgetheadimg': 'headimgs', 'webwxgetmsgimg': 'msgimgs', 'webwxgetvideo': 'videos', 'webwxgetvoice': 'voices', '_showQRCodeImg': 'qrcodes'}
 		self.appid = 'wx782c26e4c19acffb'
 		self.lang = 'zh_CN'
 
@@ -125,17 +125,14 @@ class WebWeixin(object):
 			self._str2qr('https://login.weixin.qq.com/l/' + self.uuid)
 
 	def _showQRCodeImg(self):
-		QRCODE_PATH = os.path.join(os.getcwd(),'qrcode.jpg')
 		url = 'https://login.weixin.qq.com/qrcode/' + self.uuid
 		params = {
 			't' : 'webwx',
 			'_' : int(time.time())
 		}
 
-		data = self._post(url,params,False)
-		with open(QRCODE_PATH, 'wb') as f:
-			f.write(data)
-
+		data = self._post(url, params, False)
+		QRCODE_PATH = self._saveFile('qrcode.jpg', data, '_showQRCodeImg')
 		os.startfile(QRCODE_PATH)
 
 	def waitForLogin(self, tip = 1):
