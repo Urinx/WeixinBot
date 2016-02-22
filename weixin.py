@@ -11,6 +11,8 @@ import multiprocessing
 import platform
 import logging
 from collections import defaultdict
+from urlparse import urlparse
+from lxml import html
 
 def catchKeyboardInterrupt(fn):
 	def wrapper(*args):
@@ -366,6 +368,59 @@ class WebWeixin(object):
 				return member['UserName']
 		return None
 
+	def _showMsg(self, message):
+		
+		srcName = None
+		dstName = None
+		groupName = None
+		content = None
+
+		msg = message
+		logging.debug(msg)
+
+		if msg['raw_msg']: 
+			srcName = self.getUserRemarkName(msg['raw_msg']['FromUserName'])
+			dstName = self.getUserRemarkName(msg['raw_msg']['ToUserName'])
+			content = msg['raw_msg']['Content'].replace('&lt;','<').replace('&gt;','>')
+			message_id = msg['raw_msg']['MsgId']
+
+			if content.find('http://weixin.qq.com/cgi-bin/redirectforward?args=') != -1:
+				# 地理位置消息
+				data = self._get(content).decode('gbk').encode('utf-8')
+				pos = self._searchContent('title', data, 'xml')
+				tree = html.fromstring(self._get(content))
+				url = tree.xpath('//html/body/div/img')[0].attrib['src']
+
+				for item in urlparse(url).query.split('&'):
+					if item.split('=')[0] == 'center': loc = item.split('=')[-1:]
+
+				content = '%s 发送了一个 位置消息 - 我在 [%s](%s) @ %s]' % (srcName, pos, url, loc)
+
+			if msg['raw_msg']['ToUserName'] == 'filehelper':
+				# 文件传输助手
+				dstName = '文件传输助手'
+
+			if msg['raw_msg']['FromUserName'][:2] == '@@':
+				# 接收到来自群的消息
+				[people, content] = content.split(':<br/>')
+				groupName = srcName
+				srcName = self.getUserRemarkName(people)
+				dstName = 'GROUP'
+			elif msg['raw_msg']['ToUserName'][:2] == '@@':
+				# 自己发给群的消息
+				groupName = dstName
+				dstName = 'GROUP'
+
+			# 指定了消息内容
+			if 'message' in msg.keys(): content = msg['message']
+		
+		if groupName != None:
+			print '%s |%s| %s -> %s: %s' % (message_id, groupName.strip(), srcName.strip(), dstName.strip(), content.replace('<br/>','\n'))
+			logging.info('%s |%s| %s -> %s: %s' % (message_id, groupName.strip(), srcName.strip(), dstName.strip(), content.replace('<br/>','\n')))
+		else:
+			print '%s %s -> %s: %s' % (message_id, srcName.strip(), dstName.strip(), content.replace('<br/>','\n'))
+			logging.info('%s %s -> %s: %s' % (message_id, srcName.strip(), dstName.strip(), content.replace('<br/>','\n')))
+
 	def handleMsg(self, r):
 		for msg in r['AddMsgList']:
 			print '[*] 你有新的消息，请注意查收'
@@ -385,81 +440,62 @@ class WebWeixin(object):
 				print '[*] 成功截获微信初始化消息'
 				logging.debug('[*] 成功截获微信初始化消息')
 			elif msgType == 1:
-				if content.find('http://weixin.qq.com/cgi-bin/redirectforward?args=') != -1:
-					# 地理位置消息
-					data = self._get(content).decode('gbk').encode('utf-8')
-					pos = self._searchContent('title', data, 'xml')
-					print '%s 给你发送了一个位置消息 [我在%s]' % (name, pos)
-					logging.info('%s 给你发送了一个位置消息 [我在%s]' % (name, pos))
-				elif msg['ToUserName'] == 'filehelper':
-					print '%s -> 文件传输助手: %s' % (name, content.replace('<br/>','\n'))
-					logging.info('%s -> 文件传输助手: %s' % (name, content.replace('<br/>','\n')))
-				elif msg['FromUserName'] == self.User['UserName']:
-					pass
-				elif msg['FromUserName'][:2] == '@@':
-					[people, content] = content.split(':<br/>')
-					group = self.getUserRemarkName(msg['FromUserName'])
-					name = self.getUserRemarkName(people)
-					print '|%s| %s: %s' % (group.strip(), name.strip(), content.replace('<br/>','\n'))
-					logging.info('|%s| %s: %s' % (group.strip(), name.strip(), content.replace('<br/>','\n')))
-				else:
-					print name+': '+content
-					logging.info(name+': '+content)
-					if self.autoReplyMode:
-						ans = self._xiaodoubi(content)+'\n[微信机器人自动回复]'
-						if self.webwxsendmsg(ans, msg['FromUserName']):
-							print '自动回复: '+ans
-							logging.info('自动回复: '+ans)
-						else:
-							print '自动回复失败'
-							logging.info('自动回复失败')
+				raw_msg = { 'raw_msg': msg }
+				self._showMsg(raw_msg)
+				if self.autoReplyMode:
+					ans = self._xiaodoubi(content)+'\n[微信机器人自动回复]'
+					if self.webwxsendmsg(ans, msg['FromUserName']):
+						print '自动回复: '+ans
+						logging.info('自动回复: '+ans)
+					else:
+						print '自动回复失败'
+						logging.info('自动回复失败')
 			elif msgType == 3:
 				image = self.webwxgetmsgimg(msgid)
-				print '%s 给你发送了一张图片: %s' % (name, image)
-				logging.info('%s 给你发送了一张图片: %s' % (name, image))
+				raw_msg = { 'raw_msg': msg, 'message': '%s 发送了一张图片: %s' % (name, image) }
+				self._showMsg(raw_msg)
 				self._safe_open(image)
 			elif msgType == 34:
 				voice = self.webwxgetvoice(msgid)
-				print '%s 给你发了一段语音: %s' % (name, voice)
-				logging.info('%s 给你发了一段语音: %s' % (name, voice))
+				raw_msg = { 'raw_msg': msg, 'message': '%s 发了一段语音: %s' % (name, voice) }
+				self._showMsg(raw_msg)
 				self._safe_open(voice)
 			elif msgType == 42:
 				info = msg['RecommendInfo']
-				print '%s 给你发送了一张名片:' % name
+				print '%s 发送了一张名片:' % name
 				print '========================='
 				print '= 昵称: %s' % info['NickName']
 				print '= 微信号: %s' % info['Alias']
 				print '= 地区: %s %s' % (info['Province'], info['City'])
 				print '= 性别: %s' % ['未知', '男', '女'][info['Sex']]
 				print '========================='
-				logging.info('%s 给你发送了一张名片: %s' % (name.strip(), json.dumps(info)))
+				logging.info('%s 发送了一张名片: %s' % (name.strip(), json.dumps(info)))
 			elif msgType == 47:
 				url = self._searchContent('cdnurl', content)
-				print '%s 给你发了一个动画表情，点击下面链接查看:\n%s' % (name, url)
-				logging.info('%s 给你发了一个动画表情，点击下面链接查看:\n%s' % (name, url))
+				raw_msg = { 'raw_msg': msg, 'message': '%s 发了一个动画表情，点击下面链接查看: %s' % (name, url) }
+				self._showMsg(raw_msg)
 				self._safe_open(url)
 			elif msgType == 49:
 				appMsgType = defaultdict(lambda : "")
 				appMsgType.update({5:'链接', 3:'音乐', 7:'微博'})
-				print '%s 给你分享了一个%s:' % (name, appMsgType[msg['AppMsgType']])
+				print '%s 分享了一个%s:' % (name, appMsgType[msg['AppMsgType']])
 				print '========================='
 				print '= 标题: %s' % msg['FileName']
 				print '= 描述: %s' % self._searchContent('des', content, 'xml')
 				print '= 链接: %s' % msg['Url']
 				print '= 来自: %s' % self._searchContent('appname', content, 'xml')
 				print '========================='
-				string = "%s 给你分享了一个%s:" % (name, appMsgType[msg['AppMsgType']])
+				string = "%s 分享了一个%s:" % (name, appMsgType[msg['AppMsgType']])
 			elif msgType == 62:
-				print name+' 给你发了一个小视频，请在手机上查看'
-				logging.info(name+' 给你发了一个小视频，请在手机上查看')
 				video = self.webwxgetvideo(msgid)
+				raw_msg = { 'raw_msg': msg, 'message': '%s 发了一段语音: %s' % (name, video) }
+				self._showMsg(raw_msg)
 				self._safe_open(video)
 			elif msgType == 10002:
 				print name+' 撤回消息'
 				logging.info(name+' 撤回消息')
 			else:
 				print '[*] 该消息类型为: %d，可能是表情，图片或链接' % msg['MsgType']
-				print msg
 				logging.debug('[*] 该消息类型为: %d，可能是表情，图片或链接: %s' % (msg['MsgType'], json.dumps(msg)))
 
 	def listenMsgMode(self):
@@ -475,6 +511,10 @@ class WebWeixin(object):
 				print '[*] 你在手机上登出了微信，债见'
 				logging.debug('[*] 你在手机上登出了微信，债见')
 				break
+			if retcode == '1101':
+				print '[*] 你在其他地方登录了 WEB 版微信，债见'
+				logging.debug('[*] 你在其他地方登录了 WEB 版微信，债见')
+				break	
 			elif retcode == '0':
 				if selector == '2':
 					r = self.webwxsync()
@@ -649,7 +689,7 @@ class WebWeixin(object):
 			pm = re.search(key+'\s?=\s?"([^"<]+)"', content)
 			if pm: return pm.group(1)
 		elif fmat == 'xml':
-			pm=re.search('<{0}>([^<]+)</{0}>'.format(key),content)
+			pm = re.search('<{0}>([^<]+)</{0}>'.format(key),content)
 			if pm: return pm.group(1)
 		return '未知'
 
