@@ -88,6 +88,12 @@ class WebWeixin(object):
 		opener.addheaders = [('User-agent', self.user_agent)]
 		urllib2.install_opener(opener)
 
+	def loadConfig(self, config):
+		if config['DEBUG']: self.DEBUG = config['DEBUG']
+		if config['autoReplyMode']: self.autoReplyMode = config['autoReplyMode']
+		if config['user_agent']: self.user_agent = config['user_agent']
+		if config['interactive']: self.interactive = config['interactive']
+
 	def getUUID(self):
 		url = 'https://login.weixin.qq.com/jslogin'
 		params = {
