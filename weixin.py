@@ -82,6 +82,7 @@ class WebWeixin(object):
 		self.autoReplyMode = False
 		self.syncHost = ''
 		self.user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36'
+		self.interactive = False
 
 		opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookielib.CookieJar()))
 		opener.addheaders = [('User-agent', self.user_agent)]
@@ -520,7 +521,7 @@ class WebWeixin(object):
 		if self.DEBUG: print self
 		logging.debug(self)
 
-		if raw_input('[*] 是否开启自动回复模式(y/n): ') == 'y':
+		if self.interactive and raw_input('[*] 是否开启自动回复模式(y/n): ') == 'y':
 			self.autoReplyMode = True
 			print '[*] 自动回复模式 ... 开启'
 			logging.debug('[*] 自动回复模式 ... 开启')
