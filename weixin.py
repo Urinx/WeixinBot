@@ -441,7 +441,7 @@ class WebWeixin(object):
 			else:
 				print '[*] 该消息类型为: %d，可能是表情，图片或链接' % msg['MsgType']
 				print msg
-				logging.debug('[*] 该消息类型为: %d，可能是表情，图片或链接: ' % (msg['MsgType'], json.dumps(msg)))
+				logging.debug('[*] 该消息类型为: %d，可能是表情，图片或链接: %s' % (msg['MsgType'], json.dumps(msg)))
 
 	def listenMsgMode(self):
 		print '[*] 进入消息监听模式 ... 成功'
