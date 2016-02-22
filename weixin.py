@@ -421,7 +421,7 @@ class WebWeixin(object):
 			elif msgType == 34:
 				voice = self.webwxgetvoice(msgid)
 				print '%s 给你发了一段语音: %s' % (name, voice)
-				logging.info('%s 给你发送了一张图片: %s' % (name, image))
+				logging.info('%s 给你发了一段语音: %s' % (name, voice))
 				self._safe_open(voice)
 			elif msgType == 42:
 				info = msg['RecommendInfo']
