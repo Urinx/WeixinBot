@@ -83,6 +83,10 @@ class WebWeixin(object):
 		self.syncHost = ''
 		self.user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36'
 		self.interactive = False
+		self.autoOpen = False
+		self.appid = 'wx782c26e4c19acffb'
+		self.lang = 'zh_CN'
+
 
 		opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookielib.CookieJar()))
 		opener.addheaders = [('User-agent', self.user_agent)]
@@ -93,6 +97,7 @@ class WebWeixin(object):
 		if config['autoReplyMode']: self.autoReplyMode = config['autoReplyMode']
 		if config['user_agent']: self.user_agent = config['user_agent']
 		if config['interactive']: self.interactive = config['interactive']
+		if config['autoOpen']: self.autoOpen = config['autoOpen']
 
 	def getUUID(self):
 		url = 'https://login.weixin.qq.com/jslogin'
@@ -306,41 +311,47 @@ class WebWeixin(object):
 		dic = r.json()
 		return dic['BaseResponse']['Ret'] == 0
 
+	def _saveFile(self, filename, data, api=None):
+		fn = filename
+		if self.saveSubFolders[api]:
+			dirName = os.path.join(self.saveFolder, self.saveSubFolders[api])
+			if not os.path.exists(dirName):
+				os.makedirs(dirName)
+			fn = os.path.join(dirName, filename)
+			logging.debug('Saved file: %s' % fn)
+			with open(fn, 'wb') as f: f.write(data); f.close()
+		return fn
+
 	def webwxgeticon(self, id):
 		url = self.base_uri + '/webwxgeticon?username=%s&skey=%s' % (id, self.skey)
 		data = self._get(url)
 		fn = 'img_'+id+'.jpg'
-		with open(fn, 'wb') as f: f.write(data)
-		return fn
+		return self._saveFile(fn, data, 'webwxgeticon')
 
 	def webwxgetheadimg(self, id):
 		url = self.base_uri + '/webwxgetheadimg?username=%s&skey=%s' % (id, self.skey)
 		data = self._get(url)
 		fn = 'img_'+id+'.jpg'
-		with open(fn, 'wb') as f: f.write(data)
-		return fn
+		return self._saveFile(fn, data, 'webwxgetheadimg')
 
 	def webwxgetmsgimg(self, msgid):
 		url = self.base_uri + '/webwxgetmsgimg?MsgID=%s&skey=%s' % (msgid, self.skey)
 		data = self._get(url)
 		fn = 'img_'+msgid+'.jpg'
-		with open(fn, 'wb') as f: f.write(data)
-		return fn
+		return self._saveFile(fn, data, 'webwxgetmsgimg')
 
 	# Not work now for weixin haven't support this API
 	def webwxgetvideo(self, msgid):
 		url = self.base_uri + '/webwxgetvideo?msgid=%s&skey=%s' % (msgid, self.skey)
 		data = self._get(url, api='webwxgetvideo')
 		fn = 'video_'+msgid+'.mp4'
-		with open(fn, 'wb') as f: f.write(data)
-		return fn
+		return self._saveFile(fn, data, 'webwxgetvideo')
 
 	def webwxgetvoice(self, msgid):
 		url = self.base_uri + '/webwxgetvoice?msgid=%s&skey=%s' % (msgid, self.skey)
 		data = self._get(url)
 		fn = 'voice_'+msgid+'.mp3'
-		with open(fn, 'wb') as f: f.write(data)
-		return fn
+		return self._saveFile(fn, data, 'webwxgetvoice')
 
 	def getUserRemarkName(self, id):
 		name = '未知群' if id[:2] == '@@' else '陌生人'
@@ -560,10 +571,11 @@ class WebWeixin(object):
 				logging.debug('发送图片')
 
 	def _safe_open(self, path):
-		if platform.system() == "Linux":
-		    os.system("xdg-open %s &" % path)
-		else:
-			os.system('open %s &' % path)
+		if self.autoOpen:
+			if platform.system() == "Linux":
+			    os.system("xdg-open %s &" % path)
+			else:
+				os.system('open %s &' % path)
 
 	def _run(self, str, func, *args):
 		self._echo(str)
