@@ -644,7 +644,7 @@ class WebWeixin(object):
 		self._run('[*] 开启状态通知 ... ', self.webwxstatusnotify)
 		self._run('[*] 获取联系人 ... ', self.webwxgetcontact)
 		self._echo('[*] 应有 %s 个联系人，读取到联系人 %d 个' % (self.MemberCount, len(self.MemberList))); print
-		self._echo('[*] 共有 %d 个群 | %d 个直接联系人 | %d 个特殊账号 ｜ %d 公众号或服务号' % (len(self.GroupList), len(self.ContactList), len(self.PublicUsersList), len(self.SpecialUsersList) )); print
+		self._echo('[*] 共有 %d 个群 | %d 个直接联系人 | %d 个特殊账号 ｜ %d 公众号或服务号' % (len(self.GroupList), len(self.ContactList), len(self.SpecialUsersList), len(self.PublicUsersList) )); print
 		self._run('[*] 获取群 ... ', self.webwxbatchgetcontact)		
 		logging.debug('[*] 微信网页版 ... 开动')
 		if self.DEBUG: print self
