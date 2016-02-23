@@ -93,6 +93,7 @@ class WebWeixin(object):
 		self.saveSubFolders = {'webwxgeticon': 'icons', 'webwxgetheadimg': 'headimgs', 'webwxgetmsgimg': 'msgimgs', 'webwxgetvideo': 'videos', 'webwxgetvoice': 'voices', '_showQRCodeImg': 'qrcodes'}
 		self.appid = 'wx782c26e4c19acffb'
 		self.lang = 'zh_CN'
+		self.lastCheckTs = time.time()
 		self.memberCount = 0
 
 
@@ -574,6 +575,7 @@ class WebWeixin(object):
 		self._run('[*] 进行同步线路测试 ... ', self.testsynccheck)
 		playWeChat = 0
 		while True:
+			self.lastCheckTs = time.time()
 			[retcode, selector] = self.synccheck()
 			if self.DEBUG: print 'retcode: %s, selector: %s' % (retcode, selector)
 			logging.debug('retcode: %s, selector: %s' % (retcode, selector))
@@ -589,6 +591,9 @@ class WebWeixin(object):
 				if selector == '2':
 					r = self.webwxsync()
 					if r is not None: self.handleMsg(r)
+				elif selector == '6':
+					# TODO
+					time.sleep(1)
 				elif selector == '7':
 					playWeChat += 1
 					print '[*] 你在手机上玩微信被我发现了 %d 次' % playWeChat
@@ -596,6 +601,7 @@ class WebWeixin(object):
 					r = self.webwxsync()
 				elif selector == '0':
 					time.sleep(1)
+			if (time.time() - self.lastCheckTs) <= 20: time.sleep(time.time() - self.lastCheckTs)
 
 	def sendMsg(self, name, word, isfile = False):
 		id = self.getUSerID(name)
