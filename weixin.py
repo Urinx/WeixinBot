@@ -79,8 +79,11 @@ class WebWeixin(object):
 		self.SyncKey = []
 		self.User = []
 		self.MemberList = []
-		self.ContactList = []
-		self.GroupList = []
+		self.ContactList = [] # 好友
+		self.GroupList = []	# 群
+		self.GroupMemeberList = [] # 群友
+		self.PublicUsersList = [] # 公众号／服务号
+		self.SpecialUsersList = [] # 特殊账号
 		self.autoReplyMode = False
 		self.syncHost = ''
 		self.user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36'
@@ -90,6 +93,7 @@ class WebWeixin(object):
 		self.saveSubFolders = {'webwxgeticon': 'icons', 'webwxgetheadimg': 'headimgs', 'webwxgetmsgimg': 'msgimgs', 'webwxgetvideo': 'videos', 'webwxgetvoice': 'voices', '_showQRCodeImg': 'qrcodes'}
 		self.appid = 'wx782c26e4c19acffb'
 		self.lang = 'zh_CN'
+		self.memberCount = 0
 
 
 		opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookielib.CookieJar()))
@@ -210,21 +214,28 @@ class WebWeixin(object):
 		return dic['BaseResponse']['Ret'] == 0
 
 	def webwxgetcontact(self):
+		SpecialUsers = ['newsapp', 'fmessage', 'filehelper', 'weibo', 'qqmail', 'fmessage', 'tmessage', 'qmessage', 'qqsync', 'floatbottle', 'lbsapp', 'shakeapp', 'medianote', 'qqfriend', 'readerapp', 'blogapp', 'facebookapp', 'masssendapp', 'meishiapp', 'feedsapp', 'voip', 'blogappweixin', 'weixin', 'brandsessionholder', 'weixinreminder', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'officialaccounts', 'notification_messages', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'wxitil', 'userexperience_alarm', 'notification_messages']
 		url = self.base_uri + '/webwxgetcontact?pass_ticket=%s&skey=%s&r=%s' % (self.pass_ticket, self.skey, int(time.time()))
 		dic = self._post(url, {})
-		self.MemberList = dic['MemberList']
 
+		self.MemberCount = dic['MemberCount']
+		self.MemberList = dic['MemberList']
 		ContactList = self.MemberList[:]
-		SpecialUsers = ['newsapp', 'fmessage', 'filehelper', 'weibo', 'qqmail', 'fmessage', 'tmessage', 'qmessage', 'qqsync', 'floatbottle', 'lbsapp', 'shakeapp', 'medianote', 'qqfriend', 'readerapp', 'blogapp', 'facebookapp', 'masssendapp', 'meishiapp', 'feedsapp', 'voip', 'blogappweixin', 'weixin', 'brandsessionholder', 'weixinreminder', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'officialaccounts', 'notification_messages', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'wxitil', 'userexperience_alarm', 'notification_messages']
+		GroupList = self.GroupList[:]
+		PublicUsersList = self.PublicUsersList[:]
+		SpecialUsersList = self.SpecialUsersList[:]
+
 		for i in xrange(len(ContactList) - 1, -1, -1):
 			Contact = ContactList[i]
 			if Contact['VerifyFlag'] & 8 != 0: # 公众号/服务号
 				ContactList.remove(Contact)
+				self.PublicUsersList.append(Contact)
 			elif Contact['UserName'] in SpecialUsers: # 特殊账号
 				ContactList.remove(Contact)
+				self.SpecialUsersList.append(Contact)
 			elif Contact['UserName'].find('@@') != -1: # 群聊
-				self.GroupList.append(Contact)
 				ContactList.remove(Contact)
+				self.GroupList.append(Contact)
 			elif Contact['UserName'] == self.User['UserName']: # 自己
 				ContactList.remove(Contact)
 		self.ContactList = ContactList
@@ -239,8 +250,30 @@ class WebWeixin(object):
 			"List": [ {"UserName": g['UserName'], "EncryChatRoomId":""} for g in self.GroupList ]
 		}
 		dic = self._post(url, params)
+		
 		# blabla ...
+		ContactList = dic['ContactList']
+		ContactCount = dic['Count']
+		self.GroupList = ContactList
+
+		for i in xrange(len(ContactList) - 1, -1, -1):
+			Contact = ContactList[i]
+			MemberList = Contact['MemberList']
+			for member in MemberList:
+				self.GroupMemeberList.append(member)
 		return True
+
+	def getNameById(self, id):
+		url = self.base_uri + '/webwxbatchgetcontact?type=ex&r=%s&pass_ticket=%s' % (int(time.time()), self.pass_ticket)
+		params = {
+			'BaseRequest': self.BaseRequest,
+			"Count": 1,
+			"List": [ {"UserName": id, "EncryChatRoomId":""} ]
+		}
+		dic = self._post(url, params)
+		
+		# blabla ...
+		return dic['ContactList']
 
 	def testsynccheck(self):
 		SyncHost = [
@@ -354,12 +387,41 @@ class WebWeixin(object):
 		fn = 'voice_'+msgid+'.mp3'
 		return self._saveFile(fn, data, 'webwxgetvoice')
 
+	def getGroupName(self, id):
+		name = '未知群'
+		for member in self.GroupList:
+			if member['UserName'] == id:
+				name = member['NickName']
+		if name == '未知群':
+			# 现有群里面查不到
+			GroupList = self.getNameById(id)
+			for group in GroupList:
+				self.GroupList.append(group)
+				if group['UserName'] == id:
+					name = group['NickName']
+					MemberList = group['MemberList']
+					for member in MemberList:
+						self.GroupMemeberList.append(member)
+		return name
+
 	def getUserRemarkName(self, id):
 		name = '未知群' if id[:2] == '@@' else '陌生人'
-		if id == self.User['UserName']: return self.User['NickName']
-		for member in self.MemberList:
-			if member['UserName'] == id:
-				name = member['RemarkName'] if member['RemarkName'] else member['NickName']
+		if id == self.User['UserName']: return self.User['NickName']	# 自己
+
+		if id[:2] == '@@':
+			# 群
+			name = self.getGroupName(id)	
+		else:
+			# 直接联系人
+			for member in self.ContactList:
+				if member['UserName'] == id:
+					name = member['RemarkName'] if member['RemarkName'] else member['NickName']				
+			# 群友
+			for member in self.GroupMemeberList:
+				if member['UserName'] == id:
+					name = member['DisplayName'] if member['DisplayName'] else member['NickName']
+
+		if name == '未知群' or name == '陌生人': logging.debug(id)
 		return name
 
 	def getUSerID(self, name):
@@ -469,7 +531,8 @@ class WebWeixin(object):
 				print '= 地区: %s %s' % (info['Province'], info['City'])
 				print '= 性别: %s' % ['未知', '男', '女'][info['Sex']]
 				print '========================='
-				logging.info('%s 发送了一张名片: %s' % (name.strip(), json.dumps(info)))
+				raw_msg = { 'raw_msg': msg, 'message': '%s 发送了一张名片: %s' % (name.strip(), json.dumps(info)) }
+				self._showMsg(raw_msg)
 			elif msgType == 47:
 				url = self._searchContent('cdnurl', content)
 				raw_msg = { 'raw_msg': msg, 'message': '%s 发了一个动画表情，点击下面链接查看: %s' % (name, url) }
@@ -485,7 +548,14 @@ class WebWeixin(object):
 				print '= 链接: %s' % msg['Url']
 				print '= 来自: %s' % self._searchContent('appname', content, 'xml')
 				print '========================='
-				string = "%s 分享了一个%s:" % (name, appMsgType[msg['AppMsgType']])
+				card = {
+					'title': msg['FileName'],
+					'description': self._searchContent('des', content, 'xml'),
+					'url': msg['Url'],
+					'appname': self._searchContent('appname', content, 'xml')
+				}
+				raw_msg = { 'raw_msg': msg, 'message': '%s 分享了一个%s: %s' % (name, appMsgType[msg['AppMsgType']], json.dumps(card)) }
+				self._showMsg(raw_msg)
 			elif msgType == 62:
 				video = self.webwxgetvideo(msgid)
 				raw_msg = { 'raw_msg': msg, 'message': '%s 发了一段语音: %s' % (name, video) }
@@ -573,7 +643,10 @@ class WebWeixin(object):
 		self._run('[*] 微信初始化 ... ', self.webwxinit)
 		self._run('[*] 开启状态通知 ... ', self.webwxstatusnotify)
 		self._run('[*] 获取联系人 ... ', self.webwxgetcontact)
-		self._echo('[*] 共有 %d 位联系人' % len(self.ContactList)); print; logging.debug('[*] 微信网页版 ... 开动')
+		self._echo('[*] 应有 %s 个联系人，读取到联系人 %d 个' % (self.MemberCount, len(self.MemberList))); print
+		self._echo('[*] 共有 %d 个群 | %d 个直接联系人 | %d 个特殊账号 ｜ %d 公众号或服务号' % (len(self.GroupList), len(self.ContactList), len(self.PublicUsersList), len(self.SpecialUsersList) )); print
+		self._run('[*] 获取群 ... ', self.webwxbatchgetcontact)		
+		logging.debug('[*] 微信网页版 ... 开动')
 		if self.DEBUG: print self
 		logging.debug(self)
 
@@ -618,7 +691,7 @@ class WebWeixin(object):
 
 	def _run(self, str, func, *args):
 		self._echo(str)
-		if func(*args): print '成功'; logging.debug('%s... 开启' % (str))
+		if func(*args): print '成功'; logging.debug('%s... 成功' % (str))
 		else: print('失败\n[*] 退出程序'); logging.debug('%s... 失败' % (str)); logging.debug('[*] 退出程序'); exit()
 
 	def _echo(self, str):
