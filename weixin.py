@@ -465,10 +465,14 @@ class WebWeixin(object):
 
 			if msg['raw_msg']['FromUserName'][:2] == '@@':
 				# 接收到来自群的消息
-				[people, content] = content.split(':<br/>')
-				groupName = srcName
-				srcName = self.getUserRemarkName(people)
-				dstName = 'GROUP'
+				if re.search(":<br/>", content, re.IGNORECASE):
+					[people, content] = content.split(':<br/>')
+					groupName = srcName
+					srcName = self.getUserRemarkName(people)
+					dstName = 'GROUP'
+				else:
+					groupName = srcName
+					srcName = 'SYSTEM'
 			elif msg['raw_msg']['ToUserName'][:2] == '@@':
 				# 自己发给群的消息
 				groupName = dstName
@@ -499,10 +503,8 @@ class WebWeixin(object):
 			name = self.getUserRemarkName(msg['FromUserName'])
 			content = msg['Content'].replace('&lt;','<').replace('&gt;','>')
 			msgid = msg['MsgId']
-			if msgType == 51:
-				print '[*] 成功截获微信初始化消息'
-				logging.debug('[*] 成功截获微信初始化消息')
-			elif msgType == 1:
+
+			if msgType == 1:
 				raw_msg = { 'raw_msg': msg }
 				self._showMsg(raw_msg)
 				if self.autoReplyMode:
@@ -557,23 +559,28 @@ class WebWeixin(object):
 				}
 				raw_msg = { 'raw_msg': msg, 'message': '%s 分享了一个%s: %s' % (name, appMsgType[msg['AppMsgType']], json.dumps(card)) }
 				self._showMsg(raw_msg)
+			elif msgType == 51:
+				raw_msg = { 'raw_msg': msg, 'message': '[*] 成功获取联系人信息' }
+				self._showMsg(raw_msg)
 			elif msgType == 62:
 				video = self.webwxgetvideo(msgid)
 				raw_msg = { 'raw_msg': msg, 'message': '%s 发了一段语音: %s' % (name, video) }
 				self._showMsg(raw_msg)
 				self._safe_open(video)
 			elif msgType == 10002:
-				print name+' 撤回消息'
-				logging.info(name+' 撤回消息')
+				raw_msg = { 'raw_msg': msg, 'message': '%s 撤回了一条消息' % name }
+				self._showMsg(raw_msg)
 			else:
-				print '[*] 该消息类型为: %d，可能是表情，图片或链接' % msg['MsgType']
-				logging.debug('[*] 该消息类型为: %d，可能是表情，图片或链接: %s' % (msg['MsgType'], json.dumps(msg)))
+				logging.debug('[*] 该消息类型为: %d，可能是表情，图片, 链接或红包: %s' % (msg['MsgType'], json.dumps(msg)))				
+				raw_msg = { 'raw_msg': msg, 'message': '[*] 该消息类型为: %d，可能是表情，图片, 链接或红包' % msg['MsgType'] }
+				self._showMsg(raw_msg)
 
 	def listenMsgMode(self):
 		print '[*] 进入消息监听模式 ... 成功'
 		logging.debug('[*] 进入消息监听模式 ... 成功')
 		self._run('[*] 进行同步线路测试 ... ', self.testsynccheck)
 		playWeChat = 0
+		redEnvelope = 0
 		while True:
 			self.lastCheckTs = time.time()
 			[retcode, selector] = self.synccheck()
@@ -593,7 +600,9 @@ class WebWeixin(object):
 					if r is not None: self.handleMsg(r)
 				elif selector == '6':
 					# TODO
-					time.sleep(1)
+					redEnvelope += 1
+					print '[*] 收到疑似红包消息 %d 次' % redEnvelope
+					logging.debug('[*] 收到疑似红包消息 %d 次' % redEnvelope)
 				elif selector == '7':
 					playWeChat += 1
 					print '[*] 你在手机上玩微信被我发现了 %d 次' % playWeChat
