@@ -650,6 +650,8 @@ class WebWeixin(object):
                     print '[*] 请在手机上点击确认以登录 ... '
                     if not self.waitForLogin(0):
                         continue
+                    break
+
 		self._run('[*] 正在登录 ... ', self.login)
 		self._run('[*] 微信初始化 ... ', self.webwxinit)
 		self._run('[*] 开启状态通知 ... ', self.webwxstatusnotify)
