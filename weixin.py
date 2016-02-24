@@ -157,9 +157,9 @@ class WebWeixin(object):
 			self.base_uri = r_uri[:r_uri.rfind('/')]
 			return True
 		elif code == '408':
-			self._echo('[登陆超时] ')
+			self._echo('[登陆超时] \n')
 		else:
-			self._echo('[登陆异常] ')
+			self._echo('[登陆异常] \n')
 		return False
 
 	def login(self):
@@ -641,10 +641,15 @@ class WebWeixin(object):
 	@catchKeyboardInterrupt
 	def start(self):
 		self._echo('[*] 微信网页版 ... 开动'); print; logging.debug('[*] 微信网页版 ... 开动')
-		self._run('[*] 正在获取 uuid ... ', self.getUUID)
-		self._echo('[*] 正在获取二维码 ... 成功'); print; logging.debug('[*] 微信网页版 ... 开动'); self.genQRCode()
-		self._run('[*] 请使用微信扫描二维码以登录 ... ', self.waitForLogin)
-		self._run('[*] 请在手机上点击确认以登录 ... ', self.waitForLogin, 0)
+                while True:
+                    self._run('[*] 正在获取 uuid ... ', self.getUUID)
+                    self._echo('[*] 正在获取二维码 ... 成功'); print; logging.debug('[*] 微信网页版 ... 开动'); self.genQRCode()
+                    print '[*] 请使用微信扫描二维码以登录 ... '
+                    if not self.waitForLogin():
+                        continue
+                    print '[*] 请在手机上点击确认以登录 ... '
+                    if not self.waitForLogin(0):
+                        continue
 		self._run('[*] 正在登录 ... ', self.login)
 		self._run('[*] 微信初始化 ... ', self.webwxinit)
 		self._run('[*] 开启状态通知 ... ', self.webwxstatusnotify)
