@@ -564,7 +564,7 @@ class WebWeixin(object):
 				self._showMsg(raw_msg)
 			elif msgType == 62:
 				video = self.webwxgetvideo(msgid)
-				raw_msg = { 'raw_msg': msg, 'message': '%s 发了一段语音: %s' % (name, video) }
+				raw_msg = { 'raw_msg': msg, 'message': '%s 发了一段小视频: %s' % (name, video) }
 				self._showMsg(raw_msg)
 				self._safe_open(video)
 			elif msgType == 10002:
