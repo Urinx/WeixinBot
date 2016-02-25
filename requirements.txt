@@ -1,0 +1,7 @@
+colorama
+coloredlogs
+humanfriendly
+lxml
+qrcode
+requests
+six

@@ -95,6 +95,8 @@ class WebWeixin(object):
 		self.lang = 'zh_CN'
 		self.lastCheckTs = time.time()
 		self.memberCount = 0
+		self.SpecialUsers = ['newsapp', 'fmessage', 'filehelper', 'weibo', 'qqmail', 'fmessage', 'tmessage', 'qmessage', 'qqsync', 'floatbottle', 'lbsapp', 'shakeapp', 'medianote', 'qqfriend', 'readerapp', 'blogapp', 'facebookapp', 'masssendapp', 'meishiapp', 'feedsapp', 'voip', 'blogappweixin', 'weixin', 'brandsessionholder', 'weixinreminder', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'officialaccounts', 'notification_messages', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'wxitil', 'userexperience_alarm', 'notification_messages']
+		self.TimeOut = 20 # 同步最短时间间隔（单位：秒）
 
 
 		opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookielib.CookieJar()))
@@ -215,7 +217,7 @@ class WebWeixin(object):
 		return dic['BaseResponse']['Ret'] == 0
 
 	def webwxgetcontact(self):
-		SpecialUsers = ['newsapp', 'fmessage', 'filehelper', 'weibo', 'qqmail', 'fmessage', 'tmessage', 'qmessage', 'qqsync', 'floatbottle', 'lbsapp', 'shakeapp', 'medianote', 'qqfriend', 'readerapp', 'blogapp', 'facebookapp', 'masssendapp', 'meishiapp', 'feedsapp', 'voip', 'blogappweixin', 'weixin', 'brandsessionholder', 'weixinreminder', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'officialaccounts', 'notification_messages', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'wxitil', 'userexperience_alarm', 'notification_messages']
+		SpecialUsers = self.SpecialUsers
 		url = self.base_uri + '/webwxgetcontact?pass_ticket=%s&skey=%s&r=%s' % (self.pass_ticket, self.skey, int(time.time()))
 		dic = self._post(url, {})
 
@@ -413,10 +415,20 @@ class WebWeixin(object):
 			# 群
 			name = self.getGroupName(id)	
 		else:
+			# 特殊账号
+			for member in self.SpecialUsersList:
+				if member['UserName'] == id:
+					name = member['RemarkName'] if member['RemarkName'] else member['NickName']
+
+			# 公众号或服务号
+			for member in self.PublicUsersList:
+				if member['UserName'] == id:
+					name = member['RemarkName'] if member['RemarkName'] else member['NickName']
+
 			# 直接联系人
 			for member in self.ContactList:
 				if member['UserName'] == id:
-					name = member['RemarkName'] if member['RemarkName'] else member['NickName']				
+					name = member['RemarkName'] if member['RemarkName'] else member['NickName']
 			# 群友
 			for member in self.GroupMemeberList:
 				if member['UserName'] == id:
@@ -478,8 +490,12 @@ class WebWeixin(object):
 				groupName = dstName
 				dstName = 'GROUP'
 
+			# 收到了红包
+			if content == '收到红包，请在手机上查看': msg['message'] = content
+
 			# 指定了消息内容
 			if 'message' in msg.keys(): content = msg['message']
+
 		
 		if groupName != None:
 			print '%s |%s| %s -> %s: %s' % (message_id, groupName.strip(), srcName.strip(), dstName.strip(), content.replace('<br/>','\n'))
