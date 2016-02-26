@@ -801,6 +801,7 @@ class WebWeixin(object):
 			if pm: return pm.group(1)
 		elif fmat == 'xml':
 			pm = re.search('<{0}>([^<]+)</{0}>'.format(key),content)
+			if not pm: pm = re.search('<{0}><\!\[CDATA\[(.*?)\]\]></{0}>'.format(key),content)
 			if pm: return pm.group(1)
 		return '未知'
 
