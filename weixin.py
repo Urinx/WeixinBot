@@ -14,6 +14,11 @@ from collections import defaultdict
 from urlparse import urlparse
 from lxml import html
 
+# for media upload
+import os
+import mimetypes
+from requests_toolbelt.multipart.encoder import MultipartEncoder
+
 def catchKeyboardInterrupt(fn):
 	def wrapper(*args):
 		try:
@@ -97,9 +102,10 @@ class WebWeixin(object):
 		self.memberCount = 0
 		self.SpecialUsers = ['newsapp', 'fmessage', 'filehelper', 'weibo', 'qqmail', 'fmessage', 'tmessage', 'qmessage', 'qqsync', 'floatbottle', 'lbsapp', 'shakeapp', 'medianote', 'qqfriend', 'readerapp', 'blogapp', 'facebookapp', 'masssendapp', 'meishiapp', 'feedsapp', 'voip', 'blogappweixin', 'weixin', 'brandsessionholder', 'weixinreminder', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'officialaccounts', 'notification_messages', 'wxid_novlwrv3lqwv11', 'gh_22b87fa7cb3c', 'wxitil', 'userexperience_alarm', 'notification_messages']
 		self.TimeOut = 20 # 同步最短时间间隔（单位：秒）
+		self.media_count = -1
 
-
-		opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookielib.CookieJar()))
+		self.cookie = cookielib.CookieJar()
+		opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookie))
 		opener.addheaders = [('User-agent', self.user_agent)]
 		urllib2.install_opener(opener)
 
@@ -218,6 +224,7 @@ class WebWeixin(object):
 
 	def webwxgetcontact(self):
 		SpecialUsers = self.SpecialUsers
+		print self.base_uri
 		url = self.base_uri + '/webwxgetcontact?pass_ticket=%s&skey=%s&r=%s' % (self.pass_ticket, self.skey, int(time.time()))
 		dic = self._post(url, {})
 
@@ -344,6 +351,100 @@ class WebWeixin(object):
 		}
 		headers = {'content-type': 'application/json; charset=UTF-8'}
 		data = json.dumps(params, ensure_ascii=False).encode('utf8')
+		r = requests.post(url, data = data, headers = headers)
+		dic = r.json()
+		return dic['BaseResponse']['Ret'] == 0
+
+	def webwxuploadmedia(self, image_name):
+		url = 'https://file2.wx.qq.com/cgi-bin/mmwebwx-bin/webwxuploadmedia?f=json'
+		# 计数器
+		self.media_count = self.media_count + 1
+		# 文件名
+		file_name = image_name
+		# MIME格式
+		# mime_type = application/pdf, image/jpeg, image/png, etc.
+		mime_type = mimetypes.guess_type(image_name,strict=False)[0]
+		# 微信识别的文档格式，微信服务器应该只支持两种类型的格式。pic和doc
+		# pic格式，直接显示。doc格式则显示为文件。
+		media_type = 'pic' if mime_type.split('/')[0] == 'image' else 'doc'
+		# 上一次修改日期
+		lastModifieDate = 'Thu Mar 17 2016 00:55:10 GMT+0800 (CST)'
+		# 文件大小
+		file_size = os.path.getsize(file_name)
+		# PassTicket
+		pass_ticket = self.pass_ticket
+		# clientMediaId
+		client_media_id = str(int(time.time()*1000)) + str(random.random())[:5].replace('.','')
+		# webwx_data_ticket
+		webwx_data_ticket = ''
+		for item in self.cookie:
+			if item.name == 'webwx_data_ticket':
+				webwx_data_ticket = item.value
+				break;
+		if (webwx_data_ticket == ''):
+			return "None Fuck Cookie"
+
+		uploadmediarequest = json.dumps({
+			  "BaseRequest": self.BaseRequest,
+			  "ClientMediaId": client_media_id,
+			  "TotalLen": file_size,
+			  "StartPos": 0,
+			  "DataLen": file_size,
+			  "MediaType": 4
+		}, ensure_ascii=False).encode('utf8')
+
+		multipart_encoder = MultipartEncoder(
+			fields = {
+				'id': 'WU_FILE_' + str(self.media_count), 
+				'name': file_name,
+				'type': mime_type,
+				'lastModifieDate': lastModifieDate,
+				'size': str(file_size),
+				'mediatype': media_type,
+				'uploadmediarequest': uploadmediarequest,
+				'webwx_data_ticket': webwx_data_ticket,
+				'pass_ticket': pass_ticket,
+				'filename': (file_name, open(file_name, 'rb'), mime_type.split('/')[1])
+			},
+			boundary = '-----------------------------1575017231431605357584454111'
+		)
+
+		headers = {
+			'Host': 'file2.wx.qq.com',
+			'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:42.0) Gecko/20100101 Firefox/42.0',
+			'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+			'Accept-Language': 'en-US,en;q=0.5',
+			'Accept-Encoding': 'gzip, deflate',
+			'Referer': 'https://wx2.qq.com/',
+			'Content-Type': multipart_encoder.content_type,
+			'Origin': 'https://wx2.qq.com',
+			'Connection': 'keep-alive',
+			'Pragma': 'no-cache',
+			'Cache-Control': 'no-cache'
+		}
+
+		r = requests.post(url, data = multipart_encoder, headers = headers)
+		response_json = r.json()
+		if response_json['BaseResponse']['Ret'] == 0:
+			return response_json
+		return None
+
+	def webwxsendmsgimg(self, user_id, media_id):
+		url = 'https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsendmsgimg?fun=async&f=json&pass_ticket=%s' % self.pass_ticket
+		clientMsgId = str(int(time.time()*1000)) + str(random.random())[:5].replace('.','')
+		data_json = {
+			"BaseRequest": self.BaseRequest,
+			"Msg": {
+				"Type": 3,
+				"MediaId": media_id,
+				"FromUserName": self.User['UserName'],
+				"ToUserName": user_id,
+				"LocalID": clientMsgId,
+				"ClientMsgId": clientMsgId
+			}
+		}
+		headers = {'content-type': 'application/json; charset=UTF-8'}
+		data = json.dumps(data_json, ensure_ascii=False).encode('utf8')
 		r = requests.post(url, data = data, headers = headers)
 		dic = r.json()
 		return dic['BaseResponse']['Ret'] == 0
@@ -663,6 +764,14 @@ class WebWeixin(object):
 				print ' [失败]'
 			time.sleep(1)
 
+	def sendImg(self, name, file_name):
+		response = self.webwxuploadmedia(file_name)
+		media_id = ""
+		if response is not None:
+			media_id = response['MediaId']
+		user_id = self.getUSerID(name)
+		response = self.webwxsendmsgimg(user_id, media_id)
+
 	@catchKeyboardInterrupt
 	def start(self):
 		self._echo('[*] 微信网页版 ... 开动'); print; logging.debug('[*] 微信网页版 ... 开动')
@@ -718,12 +827,14 @@ class WebWeixin(object):
 				logging.debug('发送文件')
 			elif text[:3] == 'i->':
 				print '发送图片'
+				[name, file_name] = text[3:].split(':')
+				self.sendImg(name, file_name)
 				logging.debug('发送图片')
 
 	def _safe_open(self, path):
 		if self.autoOpen:
 			if platform.system() == "Linux":
-			    os.system("xdg-open %s &" % path)
+				os.system("xdg-open %s &" % path)
 			else:
 				os.system('open %s &' % path)
 
