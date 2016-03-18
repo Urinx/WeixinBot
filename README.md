@@ -83,6 +83,9 @@
 ```
 window.QRLogin.code = 200; window.QRLogin.uuid = "xxx"
 ```
+> 注：这里的appid就是在微信开放平台注册的应用的AppID。网页版微信有两个AppID，早期的是`wx782c26e4c19acffb`，在微信客户端上显示为应用名称为`Web微信`；现在用的是`wxeb7ec651dd0aefa9`，显示名称为`微信网页版`。
+
+![6](screenshot/8.jpg)
 <br>
 
 | API | 生成二维码 |
@@ -736,7 +739,7 @@ Content:
 持续更新中 ...
 
 ## Todo
-- [ ] 发送图片或者文件功能
+- [x] 发送图片或者文件功能
 - [ ] 主动给群聊发送消息
 - [ ] 建立群聊
 - [x] 群发消息
