@@ -388,7 +388,7 @@ selector:
 }
 ```
 
-#### 发送 Emoji 表情
+#### 发送表情
 
 | API | webwxsendmsgemotion |
 | --- | ------------ |
