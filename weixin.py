@@ -485,6 +485,31 @@ class WebWeixin(object):
         dic = r.json()
         return dic['BaseResponse']['Ret'] == 0
 
+    def webwxsendmsgemotion(self, user_id, media_id):
+        url = 'https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsendemoticon?fun=sys&f=json&pass_ticket=%s' % self.pass_ticket
+        clientMsgId = str(int(time.time() * 1000)) + \
+            str(random.random())[:5].replace('.', '')
+        data_json = {
+            "BaseRequest": self.BaseRequest,
+            "Msg": {
+                "Type": 47,
+                "EmojiFlag": 2,
+                "MediaId": media_id,
+                "FromUserName": self.User['UserName'],
+                "ToUserName": user_id,
+                "LocalID": clientMsgId,
+                "ClientMsgId": clientMsgId
+            }
+        }
+        headers = {'content-type': 'application/json; charset=UTF-8'}
+        data = json.dumps(data_json, ensure_ascii=False).encode('utf8')
+        r = requests.post(url, data=data, headers=headers)
+        dic = r.json()
+        if self.DEBUG:
+            print json.dumps(dic, indent=4)
+            logging.debug(json.dumps(dic, indent=4))
+        return dic['BaseResponse']['Ret'] == 0
+
     def _saveFile(self, filename, data, api=None):
         fn = filename
         if self.saveSubFolders[api]:
@@ -840,6 +865,14 @@ class WebWeixin(object):
         user_id = self.getUSerID(name)
         response = self.webwxsendmsgimg(user_id, media_id)
 
+    def sendEmotion(self, name, file_name):
+        response = self.webwxuploadmedia(file_name)
+        media_id = ""
+        if response is not None:
+            media_id = response['MediaId']
+        user_id = self.getUSerID(name)
+        response = self.webwxsendmsgemotion(user_id, media_id)
+
     @catchKeyboardInterrupt
     def start(self):
         self._echo('[*] 微信网页版 ... 开动')
@@ -910,6 +943,11 @@ class WebWeixin(object):
                 [name, file_name] = text[3:].split(':')
                 self.sendImg(name, file_name)
                 logging.debug('发送图片')
+            elif text[:3] == 'e->':
+                print '发送表情'
+                [name, file_name] = text[3:].split(':')
+                self.sendEmotion(name, file_name)
+                logging.debug('发送表情')
 
     def _safe_open(self, path):
         if self.autoOpen:
