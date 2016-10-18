@@ -247,7 +247,6 @@ class WebWeixin(object):
 
     def webwxgetcontact(self):
         SpecialUsers = self.SpecialUsers
-        print self.base_uri
         url = self.base_uri + '/webwxgetcontact?pass_ticket=%s&skey=%s&r=%s' % (
             self.pass_ticket, self.skey, int(time.time()))
         dic = self._post(url, {})
@@ -1022,11 +1021,26 @@ class WebWeixin(object):
                 'ContentType', 'application/json; charset=UTF-8')
         else:
             request = urllib2.Request(url=url, data=urllib.urlencode(params))
-        response = urllib2.urlopen(request)
-        data = response.read()
-        if jsonfmt:
-            return json.loads(data, object_hook=_decode_dict)
-        return data
+        #print(url)
+        #response = urllib2.urlopen(request)
+
+        try: 
+            response = urllib2.urlopen(request)
+            data = response.read()
+            if jsonfmt:
+                return json.loads(data, object_hook=_decode_dict)
+            return data
+        except urllib2.HTTPError, e:
+            checksLogger.error('HTTPError = ' + str(e.code))
+        except urllib2.URLError, e:
+            checksLogger.error('URLError = ' + str(e.reason))
+        except httplib.HTTPException, e:
+            checksLogger.error('HTTPException')
+        except Exception:
+            import traceback
+            checksLogger.error('generic exception: ' + traceback.format_exc())
+
+        return ''
 
     def _xiaodoubi(self, word):
         url = 'http://www.xiaodoubi.com/bot/chat.php'
