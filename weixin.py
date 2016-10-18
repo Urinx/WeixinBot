@@ -1009,10 +1009,21 @@ class WebWeixin(object):
             request.add_header('Range', 'bytes=0-')
         if api == 'webwxgetvideo':
             request.add_header('Range', 'bytes=0-')
-        response = urllib2.urlopen(request)
-        data = response.read()
-        logging.debug(url)
-        return data
+        try:
+            response = urllib2.urlopen(request)
+            data = response.read()
+            logging.debug(url)
+            return data
+        except urllib2.HTTPError, e:
+            logging.error('HTTPError = ' + str(e.code))
+        except urllib2.URLError, e:
+            logging.error('URLError = ' + str(e.reason))
+        except httplib.HTTPException, e:
+            logging.error('HTTPException')
+        except Exception:
+            import traceback
+            logging.error('generic exception: ' + traceback.format_exc())
+        return ''
 
     def _post(self, url, params, jsonfmt=True):
         if jsonfmt:
@@ -1021,8 +1032,7 @@ class WebWeixin(object):
                 'ContentType', 'application/json; charset=UTF-8')
         else:
             request = urllib2.Request(url=url, data=urllib.urlencode(params))
-        #print(url)
-        #response = urllib2.urlopen(request)
+
 
         try: 
             response = urllib2.urlopen(request)
