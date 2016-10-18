@@ -177,6 +177,8 @@ class WebWeixin(object):
         url = 'https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?tip=%s&uuid=%s&_=%s' % (
             tip, self.uuid, int(time.time()))
         data = self._get(url)
+        if data == ''
+            return False
         pm = re.search(r'window.code=(\d+);', data)
         code = pm.group(1)
 
@@ -196,6 +198,8 @@ class WebWeixin(object):
 
     def login(self):
         data = self._get(self.redirect_uri)
+        if data == ''
+            return False
         doc = xml.dom.minidom.parseString(data)
         root = doc.documentElement
 
@@ -358,6 +362,8 @@ class WebWeixin(object):
         url = 'https://' + self.syncHost + \
             '/cgi-bin/mmwebwx-bin/synccheck?' + urllib.urlencode(params)
         data = self._get(url)
+        if data == ''
+            return [-1,-1]
         pm = re.search(
             r'window.synccheck={retcode:"(\d+)",selector:"(\d+)"}', data)
         retcode = pm.group(1)
@@ -546,6 +552,8 @@ class WebWeixin(object):
         url = self.base_uri + \
             '/webwxgeticon?username=%s&skey=%s' % (id, self.skey)
         data = self._get(url)
+        if data == ''
+            return ''
         fn = 'img_' + id + '.jpg'
         return self._saveFile(fn, data, 'webwxgeticon')
 
@@ -553,6 +561,8 @@ class WebWeixin(object):
         url = self.base_uri + \
             '/webwxgetheadimg?username=%s&skey=%s' % (id, self.skey)
         data = self._get(url)
+        if data == ''
+            return ''
         fn = 'img_' + id + '.jpg'
         return self._saveFile(fn, data, 'webwxgetheadimg')
 
@@ -560,6 +570,8 @@ class WebWeixin(object):
         url = self.base_uri + \
             '/webwxgetmsgimg?MsgID=%s&skey=%s' % (msgid, self.skey)
         data = self._get(url)
+        if data == ''
+            return ''
         fn = 'img_' + msgid + '.jpg'
         return self._saveFile(fn, data, 'webwxgetmsgimg')
 
@@ -568,6 +580,8 @@ class WebWeixin(object):
         url = self.base_uri + \
             '/webwxgetvideo?msgid=%s&skey=%s' % (msgid, self.skey)
         data = self._get(url, api='webwxgetvideo')
+        if data == ''
+            return ''
         fn = 'video_' + msgid + '.mp4'
         return self._saveFile(fn, data, 'webwxgetvideo')
 
@@ -575,6 +589,8 @@ class WebWeixin(object):
         url = self.base_uri + \
             '/webwxgetvoice?msgid=%s&skey=%s' % (msgid, self.skey)
         data = self._get(url)
+        if data == ''
+            return ''
         fn = 'voice_' + msgid + '.mp3'
         return self._saveFile(fn, data, 'webwxgetvoice')
 
@@ -656,9 +672,15 @@ class WebWeixin(object):
 
             if content.find('http://weixin.qq.com/cgi-bin/redirectforward?args=') != -1:
                 # 地理位置消息
-                data = self._get(content).decode('gbk').encode('utf-8')
+                data = self._get(content)
+                if data == ''
+                    return
+                data.decode('gbk').encode('utf-8')
                 pos = self._searchContent('title', data, 'xml')
-                tree = html.fromstring(self._get(content))
+                temp = self._get(content)
+                if temp == ''
+                    return
+                tree = html.fromstring(temp)
                 url = tree.xpath('//html/body/div/img')[0].attrib['src']
 
                 for item in urlparse(url).query.split('&'):
