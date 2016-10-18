@@ -142,6 +142,8 @@ class WebWeixin(object):
             '_': int(time.time()),
         }
         data = self._post(url, params, False)
+        if data == ''
+            return False
         regx = r'window.QRLogin.code = (\d+); window.QRLogin.uuid = "(\S+?)"'
         pm = re.search(regx, data)
         if pm:
@@ -165,6 +167,8 @@ class WebWeixin(object):
         }
 
         data = self._post(url, params, False)
+        if data == ''
+            return
         QRCODE_PATH = self._saveFile('qrcode.jpg', data, '_showQRCodeImg')
         os.startfile(QRCODE_PATH)
 
@@ -223,6 +227,8 @@ class WebWeixin(object):
             'BaseRequest': self.BaseRequest
         }
         dic = self._post(url, params)
+        if dic == ''
+            return False
         self.SyncKey = dic['SyncKey']
         self.User = dic['User']
         # synckey for synccheck
@@ -242,6 +248,8 @@ class WebWeixin(object):
             "ClientMsgId": int(time.time())
         }
         dic = self._post(url, params)
+        if dic == ''
+            return False
 
         return dic['BaseResponse']['Ret'] == 0
 
@@ -250,6 +258,8 @@ class WebWeixin(object):
         url = self.base_uri + '/webwxgetcontact?pass_ticket=%s&skey=%s&r=%s' % (
             self.pass_ticket, self.skey, int(time.time()))
         dic = self._post(url, {})
+        if dic == ''
+            return False
 
         self.MemberCount = dic['MemberCount']
         self.MemberList = dic['MemberList']
@@ -285,6 +295,8 @@ class WebWeixin(object):
             "List": [{"UserName": g['UserName'], "EncryChatRoomId":""} for g in self.GroupList]
         }
         dic = self._post(url, params)
+        if dic == ''
+            return False
 
         # blabla ...
         ContactList = dic['ContactList']
@@ -308,6 +320,8 @@ class WebWeixin(object):
             "List": [{"UserName": id, "EncryChatRoomId": ""}]
         }
         dic = self._post(url, params)
+        if dic == ''
+            return None
 
         # blabla ...
         return dic['ContactList']
@@ -360,6 +374,8 @@ class WebWeixin(object):
             'rr': ~int(time.time())
         }
         dic = self._post(url, params)
+        if dic == ''
+            return None
         if self.DEBUG:
             print json.dumps(dic, indent=4)
             (json.dumps(dic, indent=4))
