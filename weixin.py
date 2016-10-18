@@ -18,6 +18,7 @@ import logging
 from collections import defaultdict
 from urlparse import urlparse
 from lxml import html
+#import pdb
 
 # for media upload
 import mimetypes
@@ -150,6 +151,7 @@ class WebWeixin(object):
         return False
 
     def genQRCode(self):
+        #return self._showQRCodeImg()
         if sys.platform.startswith('win'):
             self._showQRCodeImg()
         else:
@@ -318,8 +320,10 @@ class WebWeixin(object):
             'webpush.wechat.com',
             'webpush1.wechat.com',
             'webpush2.wechat.com',
-            'webpush1.wechatapp.com',
-            # 'webpush.wechatapp.com'
+            'webpush.wx.qq.com',
+            'webpush.wx2.qq.com',
+            #'webpush1.wechatapp.com',
+            #'webpush.wechatapp.com',
         ]
         for host in SyncHost:
             self.syncHost = host
@@ -978,11 +982,16 @@ class WebWeixin(object):
             print ''.join([BLACK if j else WHITE for j in i])
 
     def _str2qr(self, str):
+        print(str)
         qr = qrcode.QRCode()
         qr.border = 1
         qr.add_data(str)
-        mat = qr.get_matrix()
-        self._printQR(mat)  # qr.print_tty() or qr.print_ascii()
+        qr.make()
+        # img = qr.make_image()
+        # img.save("qrcode.png")
+        #mat = qr.get_matrix()
+        #self._printQR(mat)  # qr.print_tty() or qr.print_ascii()
+        qr.print_ascii(invert=True)
 
     def _transcoding(self, data):
         if not data:
