@@ -362,7 +362,7 @@ class WebWeixin(object):
         dic = self._post(url, params)
         if self.DEBUG:
             print json.dumps(dic, indent=4)
-            logging.debug(json.dumps(dic, indent=4))
+            (json.dumps(dic, indent=4))
 
         if dic['BaseResponse']['Ret'] == 0:
             self.SyncKey = dic['SyncKey']
@@ -1031,14 +1031,14 @@ class WebWeixin(object):
                 return json.loads(data, object_hook=_decode_dict)
             return data
         except urllib2.HTTPError, e:
-            checksLogger.error('HTTPError = ' + str(e.code))
+            logging.error('HTTPError = ' + str(e.code))
         except urllib2.URLError, e:
-            checksLogger.error('URLError = ' + str(e.reason))
+            logging.error('URLError = ' + str(e.reason))
         except httplib.HTTPException, e:
-            checksLogger.error('HTTPException')
+            logging.error('HTTPException')
         except Exception:
             import traceback
-            checksLogger.error('generic exception: ' + traceback.format_exc())
+            logging.error('generic exception: ' + traceback.format_exc())
 
         return ''
 
