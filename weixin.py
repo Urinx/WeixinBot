@@ -142,7 +142,7 @@ class WebWeixin(object):
             '_': int(time.time()),
         }
         data = self._post(url, params, False)
-        if data == ''
+        if data == '':
             return False
         regx = r'window.QRLogin.code = (\d+); window.QRLogin.uuid = "(\S+?)"'
         pm = re.search(regx, data)
@@ -167,7 +167,7 @@ class WebWeixin(object):
         }
 
         data = self._post(url, params, False)
-        if data == ''
+        if data == '':
             return
         QRCODE_PATH = self._saveFile('qrcode.jpg', data, '_showQRCodeImg')
         os.startfile(QRCODE_PATH)
@@ -177,7 +177,7 @@ class WebWeixin(object):
         url = 'https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?tip=%s&uuid=%s&_=%s' % (
             tip, self.uuid, int(time.time()))
         data = self._get(url)
-        if data == ''
+        if data == '':
             return False
         pm = re.search(r'window.code=(\d+);', data)
         code = pm.group(1)
@@ -198,7 +198,7 @@ class WebWeixin(object):
 
     def login(self):
         data = self._get(self.redirect_uri)
-        if data == ''
+        if data == '':
             return False
         doc = xml.dom.minidom.parseString(data)
         root = doc.documentElement
@@ -231,7 +231,7 @@ class WebWeixin(object):
             'BaseRequest': self.BaseRequest
         }
         dic = self._post(url, params)
-        if dic == ''
+        if dic == '':
             return False
         self.SyncKey = dic['SyncKey']
         self.User = dic['User']
@@ -252,7 +252,7 @@ class WebWeixin(object):
             "ClientMsgId": int(time.time())
         }
         dic = self._post(url, params)
-        if dic == ''
+        if dic == '':
             return False
 
         return dic['BaseResponse']['Ret'] == 0
@@ -262,7 +262,7 @@ class WebWeixin(object):
         url = self.base_uri + '/webwxgetcontact?pass_ticket=%s&skey=%s&r=%s' % (
             self.pass_ticket, self.skey, int(time.time()))
         dic = self._post(url, {})
-        if dic == ''
+        if dic == '':
             return False
 
         self.MemberCount = dic['MemberCount']
@@ -299,7 +299,7 @@ class WebWeixin(object):
             "List": [{"UserName": g['UserName'], "EncryChatRoomId":""} for g in self.GroupList]
         }
         dic = self._post(url, params)
-        if dic == ''
+        if dic == '':
             return False
 
         # blabla ...
@@ -324,7 +324,7 @@ class WebWeixin(object):
             "List": [{"UserName": id, "EncryChatRoomId": ""}]
         }
         dic = self._post(url, params)
-        if dic == ''
+        if dic == '':
             return None
 
         # blabla ...
@@ -362,7 +362,7 @@ class WebWeixin(object):
         url = 'https://' + self.syncHost + \
             '/cgi-bin/mmwebwx-bin/synccheck?' + urllib.urlencode(params)
         data = self._get(url)
-        if data == ''
+        if data == '':
             return [-1,-1]
         pm = re.search(
             r'window.synccheck={retcode:"(\d+)",selector:"(\d+)"}', data)
@@ -380,7 +380,7 @@ class WebWeixin(object):
             'rr': ~int(time.time())
         }
         dic = self._post(url, params)
-        if dic == ''
+        if dic == '':
             return None
         if self.DEBUG:
             print json.dumps(dic, indent=4)
@@ -552,7 +552,7 @@ class WebWeixin(object):
         url = self.base_uri + \
             '/webwxgeticon?username=%s&skey=%s' % (id, self.skey)
         data = self._get(url)
-        if data == ''
+        if data == '':
             return ''
         fn = 'img_' + id + '.jpg'
         return self._saveFile(fn, data, 'webwxgeticon')
@@ -561,7 +561,7 @@ class WebWeixin(object):
         url = self.base_uri + \
             '/webwxgetheadimg?username=%s&skey=%s' % (id, self.skey)
         data = self._get(url)
-        if data == ''
+        if data == '':
             return ''
         fn = 'img_' + id + '.jpg'
         return self._saveFile(fn, data, 'webwxgetheadimg')
@@ -570,7 +570,7 @@ class WebWeixin(object):
         url = self.base_uri + \
             '/webwxgetmsgimg?MsgID=%s&skey=%s' % (msgid, self.skey)
         data = self._get(url)
-        if data == ''
+        if data == '':
             return ''
         fn = 'img_' + msgid + '.jpg'
         return self._saveFile(fn, data, 'webwxgetmsgimg')
@@ -580,7 +580,7 @@ class WebWeixin(object):
         url = self.base_uri + \
             '/webwxgetvideo?msgid=%s&skey=%s' % (msgid, self.skey)
         data = self._get(url, api='webwxgetvideo')
-        if data == ''
+        if data == '':
             return ''
         fn = 'video_' + msgid + '.mp4'
         return self._saveFile(fn, data, 'webwxgetvideo')
@@ -589,7 +589,7 @@ class WebWeixin(object):
         url = self.base_uri + \
             '/webwxgetvoice?msgid=%s&skey=%s' % (msgid, self.skey)
         data = self._get(url)
-        if data == ''
+        if data == '':
             return ''
         fn = 'voice_' + msgid + '.mp3'
         return self._saveFile(fn, data, 'webwxgetvoice')
@@ -673,12 +673,12 @@ class WebWeixin(object):
             if content.find('http://weixin.qq.com/cgi-bin/redirectforward?args=') != -1:
                 # 地理位置消息
                 data = self._get(content)
-                if data == ''
+                if data == '':
                     return
                 data.decode('gbk').encode('utf-8')
                 pos = self._searchContent('title', data, 'xml')
                 temp = self._get(content)
-                if temp == ''
+                if temp == '':
                     return
                 tree = html.fromstring(temp)
                 url = tree.xpath('//html/body/div/img')[0].attrib['src']
