@@ -15,6 +15,7 @@ import random
 import multiprocessing
 import platform
 import logging
+import httplib
 from collections import defaultdict
 from urlparse import urlparse
 from lxml import html
@@ -337,10 +338,10 @@ class WebWeixin(object):
             'webpush.wechat.com',
             'webpush1.wechat.com',
             'webpush2.wechat.com',
+            'webpush1.wechatapp.com',
+            'webpush.wechatapp.com',
             'webpush.wx.qq.com',
             'webpush.wx2.qq.com',
-            #'webpush1.wechatapp.com',
-            #'webpush.wechatapp.com',
         ]
         for host in SyncHost:
             self.syncHost = host
