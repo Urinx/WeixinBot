@@ -81,8 +81,8 @@ class WebWeixin(object):
     def __init__(self):
         self.DEBUG = False
         self.uuid = ''
-        self.base_uri = 'https://wx.qq.com/cgi-bin/mmwebwx-bin'
-        self.redirect_uri = 'https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpag'
+        self.base_uri = ''
+        self.redirect_uri = ''
         self.uin = ''
         self.sid = ''
         self.skey = ''
@@ -133,7 +133,7 @@ class WebWeixin(object):
             self.autoOpen = config['autoOpen']
 
     def getUUID(self):
-        url = 'https://login.wx.qq.com/jslogin'
+        url = 'https://login.weixin.qq.com/jslogin'
         params = {
             'appid': self.appid,
             'fun': 'new',
@@ -168,7 +168,7 @@ class WebWeixin(object):
 
     def waitForLogin(self, tip=1):
         time.sleep(tip)
-        url = 'https://login.wx.qq.com/cgi-bin/mmwebwx-bin/login?tip=%s&uuid=%s&_=%s' % (
+        url = 'https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?tip=%s&uuid=%s&_=%s' % (
             tip, self.uuid, int(time.time()))
         data = self._get(url)
         pm = re.search(r'window.code=(\d+);', data)
@@ -245,7 +245,7 @@ class WebWeixin(object):
 
     def webwxgetcontact(self):
         SpecialUsers = self.SpecialUsers
-        #print self.base_uri
+        print self.base_uri
         url = self.base_uri + '/webwxgetcontact?pass_ticket=%s&skey=%s&r=%s' % (
             self.pass_ticket, self.skey, int(time.time()))
         dic = self._post(url, {})
@@ -313,14 +313,13 @@ class WebWeixin(object):
 
     def testsynccheck(self):
         SyncHost = [
-            #'webpush.weixin.qq.com',
-            #'webpush2.weixin.qq.com',
-            #'webpush.wechat.com',
-            #'webpush1.wechat.com',
-            #'webpush2.wechat.com',
-            #'webpush1.wechatapp.com',
+            'webpush.weixin.qq.com',
+            'webpush2.weixin.qq.com',
+            'webpush.wechat.com',
+            'webpush1.wechat.com',
+            'webpush2.wechat.com',
+            'webpush1.wechatapp.com',
             # 'webpush.wechatapp.com'
-            'webpush.wx.qq.com'
         ]
         for host in SyncHost:
             self.syncHost = host
@@ -391,7 +390,7 @@ class WebWeixin(object):
         return dic['BaseResponse']['Ret'] == 0
 
     def webwxuploadmedia(self, image_name):
-        url = 'https://file.wx.qq.com/cgi-bin/mmwebwx-bin/webwxuploadmedia?f=json'
+        url = 'https://file2.wx.qq.com/cgi-bin/mmwebwx-bin/webwxuploadmedia?f=json'
         # 计数器
         self.media_count = self.media_count + 1
         # 文件名
@@ -451,9 +450,9 @@ class WebWeixin(object):
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
             'Accept-Encoding': 'gzip, deflate',
-            'Referer': 'https://wx.qq.com/',
+            'Referer': 'https://wx2.qq.com/',
             'Content-Type': multipart_encoder.content_type,
-            'Origin': 'https://wx.qq.com',
+            'Origin': 'https://wx2.qq.com',
             'Connection': 'keep-alive',
             'Pragma': 'no-cache',
             'Cache-Control': 'no-cache'
@@ -466,8 +465,7 @@ class WebWeixin(object):
         return None
 
     def webwxsendmsgimg(self, user_id, media_id):
-        url = self.base_uri + \
-            '/webwxsendmsgimg?fun=async&f=json&pass_ticket=%s' % self.pass_ticket
+        url = 'https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsendmsgimg?fun=async&f=json&pass_ticket=%s' % self.pass_ticket
         clientMsgId = str(int(time.time() * 1000)) + \
             str(random.random())[:5].replace('.', '')
         data_json = {
@@ -488,8 +486,7 @@ class WebWeixin(object):
         return dic['BaseResponse']['Ret'] == 0
 
     def webwxsendmsgemotion(self, user_id, media_id):
-        url = self.base_uri + \
-            '/webwxsendemoticon?fun=sys&f=json&pass_ticket=%s' % self.pass_ticket
+        url = 'https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsendemoticon?fun=sys&f=json&pass_ticket=%s' % self.pass_ticket
         clientMsgId = str(int(time.time() * 1000)) + \
             str(random.random())[:5].replace('.', '')
         data_json = {
