@@ -958,8 +958,12 @@ class WebWeixin(object):
             print '[*] 自动回复模式 ... 关闭'
             logging.debug('[*] 自动回复模式 ... 关闭')
 
-        listenProcess = multiprocessing.Process(target=self.listenMsgMode)
-        listenProcess.start()
+        if sys.platform.startswith('win'):
+            import thread
+            thread.start_new_thread(self.listenMsgMode())
+        else:
+            listenProcess = multiprocessing.Process(target=self.listenMsgMode)
+            listenProcess.start()
 
         while True:
             text = raw_input('')
