@@ -1151,10 +1151,10 @@ if sys.stdout.encoding == 'cp936':
 
 
 if __name__ == '__main__':
-
     logger = logging.getLogger(__name__)
-    import coloredlogs
-    coloredlogs.install(level='DEBUG')
+    if not sys.platform.startswith('win'):
+        import coloredlogs
+        coloredlogs.install(level='DEBUG')
 
     webwx = WebWeixin()
     webwx.start()
