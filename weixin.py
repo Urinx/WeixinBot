@@ -338,10 +338,9 @@ class WebWeixin(object):
             'webpush.wechat.com',
             'webpush1.wechat.com',
             'webpush2.wechat.com',
-            'webpush1.wechatapp.com',
-            'webpush.wechatapp.com',
             'webpush.wx.qq.com',
-            'webpush.wx2.qq.com',
+            'webpush2.wx.qq.com'
+            # 'webpush.wechatapp.com'
         ]
         for host in SyncHost:
             self.syncHost = host
@@ -1077,7 +1076,7 @@ class WebWeixin(object):
             request = urllib2.Request(url=url, data=urllib.urlencode(params))
 
 
-        try: 
+        try:
             response = urllib2.urlopen(request)
             data = response.read()
             if jsonfmt:
