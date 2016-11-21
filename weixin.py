@@ -11,6 +11,7 @@ import time
 import re
 import sys
 import os
+import subprocess
 import random
 import multiprocessing
 import platform
@@ -156,11 +157,13 @@ class WebWeixin(object):
     def genQRCode(self):
         #return self._showQRCodeImg()
         if sys.platform.startswith('win'):
-            self._showQRCodeImg()
+            self._showQRCodeImg('win')
+        elif sys.platform.find('darwin') >= 0:
+            self._showQRCodeImg('macos')
         else:
             self._str2qr('https://login.weixin.qq.com/l/' + self.uuid)
 
-    def _showQRCodeImg(self):
+    def _showQRCodeImg(self, os):
         url = 'https://login.weixin.qq.com/qrcode/' + self.uuid
         params = {
             't': 'webwx',
@@ -171,7 +174,12 @@ class WebWeixin(object):
         if data == '':
             return
         QRCODE_PATH = self._saveFile('qrcode.jpg', data, '_showQRCodeImg')
-        os.startfile(QRCODE_PATH)
+        if os == 'win':
+            os.startfile(QRCODE_PATH)
+        elif os == 'macos':
+            subprocess.call(["open", QRCODE_PATH])
+        else:
+            return
 
     def waitForLogin(self, tip=1):
         time.sleep(tip)
