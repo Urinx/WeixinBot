@@ -143,7 +143,10 @@ class WebWeixin(object):
             'lang': self.lang,
             '_': int(time.time()),
         }
-        data = self._post(url, params, False)
+        #r = requests.get(url=url, params=params)
+        #r.encoding = 'utf-8'
+        #data = r.text
+        data = self._post(url, params, False).decode("utf-8")
         if data == '':
             return False
         regx = r'window.QRLogin.code = (\d+); window.QRLogin.uuid = "(\S+?)"'
@@ -163,7 +166,7 @@ class WebWeixin(object):
         else:
             self._str2qr('https://login.weixin.qq.com/l/' + self.uuid)
 
-    def _showQRCodeImg(self, os):
+    def _showQRCodeImg(self, str):
         url = 'https://login.weixin.qq.com/qrcode/' + self.uuid
         params = {
             't': 'webwx',
@@ -174,9 +177,9 @@ class WebWeixin(object):
         if data == '':
             return
         QRCODE_PATH = self._saveFile('qrcode.jpg', data, '_showQRCodeImg')
-        if os == 'win':
+        if str == 'win':
             os.startfile(QRCODE_PATH)
-        elif os == 'macos':
+        elif str == 'macos':
             subprocess.call(["open", QRCODE_PATH])
         else:
             return
@@ -188,7 +191,7 @@ class WebWeixin(object):
         data = self._get(url)
         if data == '':
             return False
-        pm = re.search(r'window.code=(\d+);', data)
+        pm = re.search(r"window.code=(\d+);", data)
         code = pm.group(1)
 
         if code == '201':
@@ -242,13 +245,13 @@ class WebWeixin(object):
         dic = self._post(url, params)
         if dic == '':
             return False
-        self.SyncKey = dic['SyncKey']
-        self.User = dic['User']
+        self.SyncKey = dic[b'SyncKey']
+        self.User = dic[b'User']
         # synckey for synccheck
         self.synckey = '|'.join(
-            [str(keyVal['Key']) + '_' + str(keyVal['Val']) for keyVal in self.SyncKey['List']])
+            [str(keyVal[b'Key']) + '_' + str(keyVal[b'Val']) for keyVal in self.SyncKey[b'List']])
 
-        return dic['BaseResponse']['Ret'] == 0
+        return dic[b'BaseResponse'][b'Ret'] == 0
 
     def webwxstatusnotify(self):
         url = self.base_uri + \
@@ -256,15 +259,15 @@ class WebWeixin(object):
         params = {
             'BaseRequest': self.BaseRequest,
             "Code": 3,
-            "FromUserName": self.User['UserName'],
-            "ToUserName": self.User['UserName'],
+            "FromUserName": self.User[b'UserName'].decode(),
+            "ToUserName": self.User[b'UserName'].decode(),
             "ClientMsgId": int(time.time())
         }
         dic = self._post(url, params)
         if dic == '':
             return False
 
-        return dic['BaseResponse']['Ret'] == 0
+        return dic[b'BaseResponse'][b'Ret'] == 0
 
     def webwxgetcontact(self):
         SpecialUsers = self.SpecialUsers
@@ -274,8 +277,8 @@ class WebWeixin(object):
         if dic == '':
             return False
 
-        self.MemberCount = dic['MemberCount']
-        self.MemberList = dic['MemberList']
+        self.MemberCount = dic[b'MemberCount']
+        self.MemberList = dic[b'MemberList']
         ContactList = self.MemberList[:]
         GroupList = self.GroupList[:]
         PublicUsersList = self.PublicUsersList[:]
@@ -283,16 +286,16 @@ class WebWeixin(object):
 
         for i in range(len(ContactList) - 1, -1, -1):
             Contact = ContactList[i]
-            if Contact['VerifyFlag'] & 8 != 0:  # 公众号/服务号
+            if Contact[b'VerifyFlag'] & 8 != 0:  # 公众号/服务号
                 ContactList.remove(Contact)
                 self.PublicUsersList.append(Contact)
-            elif Contact['UserName'] in SpecialUsers:  # 特殊账号
+            elif Contact[b'UserName'].decode() in SpecialUsers:  # 特殊账号
                 ContactList.remove(Contact)
                 self.SpecialUsersList.append(Contact)
-            elif '@@' in Contact['UserName']:  # 群聊
+            elif '@@' in Contact[b'UserName'].decode():  # 群聊
                 ContactList.remove(Contact)
                 self.GroupList.append(Contact)
-            elif Contact['UserName'] == self.User['UserName']:  # 自己
+            elif Contact[b'UserName'] == self.User[b'UserName']:  # 自己
                 ContactList.remove(Contact)
         self.ContactList = ContactList
 
@@ -302,23 +305,28 @@ class WebWeixin(object):
         url = self.base_uri + \
             '/webwxbatchgetcontact?type=ex&r=%s&pass_ticket=%s' % (
                 int(time.time()), self.pass_ticket)
+        List=[{"UserName": g[b'UserName'], "EncryChatRoomId":""} for g in self.GroupList]
+        for x in List:
+            x['UserName']=x['UserName'].decode()
+
+        print(1)
         params = {
             'BaseRequest': self.BaseRequest,
             "Count": len(self.GroupList),
-            "List": [{"UserName": g['UserName'], "EncryChatRoomId":""} for g in self.GroupList]
+            "List": List
         }
         dic = self._post(url, params)
         if dic == '':
             return False
 
         # blabla ...
-        ContactList = dic['ContactList']
-        ContactCount = dic['Count']
+        ContactList = dic[b'ContactList']
+        ContactCount = dic[b'Count']
         self.GroupList = ContactList
 
         for i in range(len(ContactList) - 1, -1, -1):
             Contact = ContactList[i]
-            MemberList = Contact['MemberList']
+            MemberList = Contact[b'MemberList']
             for member in MemberList:
                 self.GroupMemeberList.append(member)
         return True
@@ -337,18 +345,18 @@ class WebWeixin(object):
             return None
 
         # blabla ...
-        return dic['ContactList']
+        return dic[b'ContactList'].decode()
 
     def testsynccheck(self):
         SyncHost = [
             'webpush.weixin.qq.com',
-            #'webpush2.weixin.qq.com',
+            'webpush2.weixin.qq.com',
             'webpush.wechat.com',
             'webpush1.wechat.com',
             'webpush2.wechat.com',
             'webpush.wx.qq.com',
             'webpush2.wx.qq.com'
-            # 'webpush.wechatapp.com'
+            'webpush.wechatapp.com'
         ]
         for host in SyncHost:
             self.syncHost = host
@@ -367,11 +375,11 @@ class WebWeixin(object):
             'synckey': self.synckey,
             '_': int(time.time()),
         }
-        url = 'https://' + self.syncHost + \
-            '/cgi-bin/mmwebwx-bin/synccheck?' + urllib.parse.urlencode(params)
+        url = 'https://' + self.syncHost + '/cgi-bin/mmwebwx-bin/synccheck?' + urllib.parse.urlencode(params)
         data = self._get(url)
         if data == '':
             return [-1,-1]
+
         pm = re.search(
             r'window.synccheck={retcode:"(\d+)",selector:"(\d+)"}', data)
         retcode = pm.group(1)
@@ -394,8 +402,8 @@ class WebWeixin(object):
             print(json.dumps(dic, indent=4))
             (json.dumps(dic, indent=4))
 
-        if dic['BaseResponse']['Ret'] == 0:
-            self.SyncKey = dic['SyncKey']
+        if dic[b'BaseResponse'][b'Ret'] == 0:
+            self.SyncKey = dic[b'SyncKey'].decode()
             self.synckey = '|'.join(
                 [str(keyVal['Key']) + '_' + str(keyVal['Val']) for keyVal in self.SyncKey['List']])
         return dic
@@ -420,7 +428,7 @@ class WebWeixin(object):
         data = json.dumps(params, ensure_ascii=False).encode('utf8')
         r = requests.post(url, data=data, headers=headers)
         dic = r.json()
-        return dic['BaseResponse']['Ret'] == 0
+        return dic[b'BaseResponse'][b'Ret'] == 0
 
     def webwxuploadmedia(self, image_name):
         url = 'https://file2.wx.qq.com/cgi-bin/mmwebwx-bin/webwxuploadmedia?f=json'
@@ -516,7 +524,7 @@ class WebWeixin(object):
         data = json.dumps(data_json, ensure_ascii=False).encode('utf8')
         r = requests.post(url, data=data, headers=headers)
         dic = r.json()
-        return dic['BaseResponse']['Ret'] == 0
+        return dic[b'BaseResponse'][b'Ret'] == 0
 
     def webwxsendmsgemotion(self, user_id, media_id):
         url = 'https://wx2.qq.com/cgi-bin/mmwebwx-bin/webwxsendemoticon?fun=sys&f=json&pass_ticket=%s' % self.pass_ticket
@@ -541,7 +549,7 @@ class WebWeixin(object):
         if self.DEBUG:
             print(json.dumps(dic, indent=4))
             logging.debug(json.dumps(dic, indent=4))
-        return dic['BaseResponse']['Ret'] == 0
+        return dic[b'BaseResponse'][b'Ret'] == 0
 
     def _saveFile(self, filename, data, api=None):
         fn = filename
@@ -642,14 +650,14 @@ class WebWeixin(object):
 
             # 直接联系人
             for member in self.ContactList:
-                if member['UserName'] == id:
-                    name = member['RemarkName'] if member[
-                        'RemarkName'] else member['NickName']
+                if member[b'UserName'].decode() == id:
+                    name = member[b'RemarkName'].decode() if member[
+                        b'RemarkName'].decode() else member[b'NickName'].decode()
             # 群友
             for member in self.GroupMemeberList:
-                if member['UserName'] == id:
-                    name = member['DisplayName'] if member[
-                        'DisplayName'] else member['NickName']
+                if member[b'UserName'].decode() == id:
+                    name = member[b'DisplayName'] if member[
+                        b'DisplayName'].decode() else member[b'NickName'].decode()
 
         if name == '未知群' or name == '陌生人':
             logging.debug(id)
@@ -657,8 +665,8 @@ class WebWeixin(object):
 
     def getUSerID(self, name):
         for member in self.MemberList:
-            if name == member['RemarkName'] or name == member['NickName']:
-                return member['UserName']
+            if name == member[b'RemarkName'].decode() or name == member[b'NickName'].decode():
+                return member[b'UserName'].decode()
         return None
 
     def _showMsg(self, message):
@@ -900,9 +908,9 @@ class WebWeixin(object):
 
     def sendMsgToAll(self, word):
         for contact in self.ContactList:
-            name = contact['RemarkName'] if contact[
-                'RemarkName'] else contact['NickName']
-            id = contact['UserName']
+            name = contact[b'RemarkName'].decode() if contact[
+                b'RemarkName'].decode() else contact[b'NickName'].decode()
+            id = contact[b'UserName'].decode()
             self._echo('-> ' + name + ': ' + word)
             if self.webwxsendmsg(word, id):
                 print(' [成功]')
@@ -1056,7 +1064,7 @@ class WebWeixin(object):
             result = data.decode('utf-8')
         return result
 
-    def _get(self, url, api=None):
+    def _get(self, url: object, api: object = None) -> object:
         request = urllib.request.Request(url=url)
         request.add_header('Referer', 'https://wx.qq.com/')
         if api == 'webwxgetvoice':
@@ -1065,7 +1073,7 @@ class WebWeixin(object):
             request.add_header('Range', 'bytes=0-')
         try:
             response = urllib.request.urlopen(request)
-            data = response.read()
+            data = response.read().decode('utf-8')
             logging.debug(url)
             return data
         except urllib.error.HTTPError as e:
@@ -1079,20 +1087,22 @@ class WebWeixin(object):
             logging.error('generic exception: ' + traceback.format_exc())
         return ''
 
-    def _post(self, url, params, jsonfmt=True):
+    def _post(self, url: object, params: object, jsonfmt: object = True) -> object:
         if jsonfmt:
-            request = urllib.request.Request(url=url, data=json.dumps(params))
+            data = json.dumps(params)
+            data=data.encode()
+            request = urllib.request.Request(url=url, data=data)
             request.add_header(
                 'ContentType', 'application/json; charset=UTF-8')
         else:
-            request = urllib.request.Request(url=url, data=urllib.parse.urlencode(params))
+            request = urllib.request.Request(url=url, data=urllib.parse.urlencode(params).encode(encoding='utf-8'))
 
 
         try:
             response = urllib.request.urlopen(request)
             data = response.read()
             if jsonfmt:
-                return json.loads(data, object_hook=_decode_dict)
+                return json.loads(data.decode('utf-8'), object_hook=_decode_dict)
             return data
         except urllib.error.HTTPError as e:
             logging.error('HTTPError = ' + str(e.code))
