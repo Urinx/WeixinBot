@@ -641,24 +641,24 @@ class WebWeixin(object):
             for member in self.SpecialUsersList:
                 if member['UserName'] == id:
                     name = member['RemarkName'] if member[
-                        b'RemarkName'] else member['NickName']
+                        'RemarkName'] else member['NickName']
 
             # 公众号或服务号
             for member in self.PublicUsersList:
                 if member['UserName'] == id:
                     name = member['RemarkName'] if member[
-                        b'RemarkName'] else member['NickName']
+                        'RemarkName'] else member['NickName']
 
             # 直接联系人
             for member in self.ContactList:
                 if member['UserName'] == id:
                     name = member['RemarkName'] if member[
-                        b'RemarkName'] else member['NickName']
+                        'RemarkName'] else member['NickName']
             # 群友
             for member in self.GroupMemeberList:
                 if member['UserName'] == id:
                     name = member['DisplayName'] if member[
-                        b'DisplayName'] else member['NickName']
+                        'DisplayName'] else member['NickName']
 
         if name == '未知群' or name == '陌生人':
             logging.debug(id)
@@ -910,7 +910,7 @@ class WebWeixin(object):
     def sendMsgToAll(self, word):
         for contact in self.ContactList:
             name = contact['RemarkName'] if contact[
-                b'RemarkName'] else contact['NickName']
+                'RemarkName'] else contact['NickName']
             id = contact['UserName']
             self._echo('-> ' + name + ': ' + word)
             if self.webwxsendmsg(word, id):
