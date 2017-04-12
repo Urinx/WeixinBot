@@ -75,6 +75,7 @@
 ![join us](saved/qrcodes/groupQrcode.jpg)
 
 记得回复机器人【喂狗】哦~ （secret code： 喂狗）
+
 “一回头，青春都喂了狗。。。”
 
 ## Web Weixin API
