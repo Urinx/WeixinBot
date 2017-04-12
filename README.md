@@ -72,7 +72,7 @@
 ## Join Us
 如果你希望和 WeixinBot 的其他开发者交流，欢迎加入我们的微信群【Youth fed the dog】. 扫描下面的二维码添加机器人为好友，并回复【喂狗】和更多开发者交流
 
-![join us](qrcodes/groupQrcode.jpg)
+![join us](saved/qrcodes/groupQrcode.jpg)
 
 记得回复机器人【喂狗】哦~ （secret code： 喂狗）
 “一回头，青春都喂了狗。。。”
