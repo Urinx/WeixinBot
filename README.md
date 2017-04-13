@@ -70,10 +70,10 @@
 +-------------+
 ```
 ## Discussion Group
-如果你希望和 WeixinBot 的其他开发者交流，或者有什么问题和建议，欢迎大家加入【Youth fed the dog】一起
+如果你希望和 WeixinBot 的其他开发者交流，或者有什么问题和建议，欢迎大家加入微信群【Youth fed the dog】一起讨论。扫描下面的二维码添加机器人为好友，并回复【Aidog】获取入群链接。
 
 <div align=center>
-<img src="saved/qrcodes/groupQrcode.jpg" width="300" height="300" alt="join us"/>
+<img src="saved/qrcodes/groupQrcode.jpg" width="220" height="220" alt="join us"/>
 </div>
 
 注：这个不是群的二维码，是机器人拉你入群，记得回复机器人【Aidog】哦~ （secret code: Aidog）
