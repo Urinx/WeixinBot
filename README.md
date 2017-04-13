@@ -69,14 +69,12 @@
 |QRCode Scaned|
 +-------------+
 ```
-## Join Us
-如果你希望和 WeixinBot 的其他开发者交流，欢迎加入我们的微信群【Youth fed the dog】. 扫描下面的二维码添加机器人为好友，并回复【喂狗】和更多开发者交流
+## Discussion Group
+如果你希望和 WeixinBot 的其他开发者交流，或者有什么问题和建议，欢迎大家加入【Youth fed the dog】一起
 
-![join us](saved/qrcodes/groupQrcode.jpg)
+![join us](saved/qrcodes/groupQrcode.jpg =300 * 300)
 
-记得回复机器人【喂狗】哦~ （secret code： 喂狗）
-
-“一回头，青春都喂了狗。。。”
+注：这个不是群的二维码，是机器人拉你入群，记得回复机器人【Aidog】哦~ （secret code: Aidog）
 
 ## Web Weixin API
 
