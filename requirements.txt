@@ -6,3 +6,5 @@ qrcode
 requests
 six
 requests_toolbelt
+pyqrcode
+certifi
