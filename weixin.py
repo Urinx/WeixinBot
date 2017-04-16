@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 import qrcode
+from pyqrcode import QRCode
 import urllib.request, urllib.parse, urllib.error
 import urllib.request, urllib.error, urllib.parse
 import http.cookiejar
@@ -8,6 +9,7 @@ import requests
 import xml.dom.minidom
 import json
 import time
+import ssl
 import re
 import sys
 import os
@@ -20,6 +22,7 @@ import http.client
 from collections import defaultdict
 from urllib.parse import urlparse
 from lxml import html
+from socket import timeout as timeout_error
 #import pdb
 
 # for media upload
@@ -83,6 +86,7 @@ class WebWeixin(object):
 
     def __init__(self):
         self.DEBUG = False
+        self.commandLineQRCode = False
         self.uuid = ''
         self.base_uri = ''
         self.redirect_uri = ''
@@ -167,22 +171,48 @@ class WebWeixin(object):
             self._str2qr('https://login.weixin.qq.com/l/' + self.uuid)
 
     def _showQRCodeImg(self, str):
-        url = 'https://login.weixin.qq.com/qrcode/' + self.uuid
-        params = {
-            't': 'webwx',
-            '_': int(time.time())
-        }
-
-        data = self._post(url, params, False)
-        if data == '':
-            return
-        QRCODE_PATH = self._saveFile('qrcode.jpg', data, '_showQRCodeImg')
-        if str == 'win':
-            os.startfile(QRCODE_PATH)
-        elif str == 'macos':
-            subprocess.call(["open", QRCODE_PATH])
+        if self.commandLineQRCode:
+            qrCode = QRCode('https://login.weixin.qq.com/l/' + self.uuid)
+            self._showCommandLineQRCode(qrCode.text(1))
         else:
-            return
+            url = 'https://login.weixin.qq.com/qrcode/' + self.uuid
+            params = {
+                't': 'webwx',
+                '_': int(time.time())
+            }
+
+            data = self._post(url, params, False)
+            if data == '':
+                return
+            QRCODE_PATH = self._saveFile('qrcode.jpg', data, '_showQRCodeImg')
+            if str == 'win':
+                os.startfile(QRCODE_PATH)
+            elif str == 'macos':
+                subprocess.call(["open", QRCODE_PATH])
+            else:
+                return
+
+    def _showCommandLineQRCode(self, qr_data, enableCmdQR=2):
+        try:
+            b = u'\u2588'
+            sys.stdout.write(b + '\r')
+            sys.stdout.flush()
+        except UnicodeEncodeError:
+            white = 'MM'
+        else:
+            white = b
+        black = '  '
+        blockCount = int(enableCmdQR)
+        if abs(blockCount) == 0:
+            blockCount = 1
+        white *= abs(blockCount)
+        if blockCount < 0:
+            white, black = black, white
+        sys.stdout.write(' ' * 50 + '\r')
+        sys.stdout.flush()
+        qr = qr_data.replace('0', white).replace('1', black)
+        sys.stdout.write(qr)
+        sys.stdout.flush()
 
     def waitForLogin(self, tip=1):
         time.sleep(tip)
@@ -377,7 +407,7 @@ class WebWeixin(object):
             '_': int(time.time()),
         }
         url = 'https://' + self.syncHost + '/cgi-bin/mmwebwx-bin/synccheck?' + urllib.parse.urlencode(params)
-        data = self._get(url)
+        data = self._get(url, timeout=5)
         if data == '':
             return [-1,-1]
 
@@ -1065,7 +1095,7 @@ class WebWeixin(object):
             result = data.decode('utf-8')
         return result
 
-    def _get(self, url: object, api: object = None) -> object:
+    def _get(self, url: object, api: object = None, timeout: object = None) -> object:
         request = urllib.request.Request(url=url)
         request.add_header('Referer', 'https://wx.qq.com/')
         if api == 'webwxgetvoice':
@@ -1073,7 +1103,7 @@ class WebWeixin(object):
         if api == 'webwxgetvideo':
             request.add_header('Range', 'bytes=0-')
         try:
-            response = urllib.request.urlopen(request)
+            response = urllib.request.urlopen(request, timeout=timeout) if timeout else urllib.request.urlopen(request)
             data = response.read().decode('utf-8')
             logging.debug(url)
             return data
@@ -1083,6 +1113,10 @@ class WebWeixin(object):
             logging.error('URLError = ' + str(e.reason))
         except http.client.HTTPException as e:
             logging.error('HTTPException')
+        except timeout_error as e:
+            pass
+        except ssl.CertificateError as e:
+            pass
         except Exception:
             import traceback
             logging.error('generic exception: ' + traceback.format_exc())
