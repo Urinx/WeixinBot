@@ -1,45 +1,42 @@
-# WeixinBot [![star this repo](http://github-svg-buttons.herokuapp.com/star.svg?user=Urinx&repo=WeixinBot&style=flat&background=1081C1)](http://github.com/Urinx/WeixinBot) [![fork this repo](http://github-svg-buttons.herokuapp.com/fork.svg?user=Urinx&repo=WeixinBot&style=flat&background=1081C1)](http://github.com/Urinx/WeixinBot/fork) ![python](https://img.shields.io/badge/python-3-ff69b4.svg)
+# WeixinBot [![star this repo](http://github-svg-buttons.herokuapp.com/star.svg?user=Urinx&repo=WeixinBot&style=flat&background=1081C1)](http://github.com/Urinx/WeixinBot) [![fork this repo](http://github-svg-buttons.herokuapp.com/fork.svg?user=Urinx&repo=WeixinBot&style=flat&background=1081C1)](http://github.com/Urinx/WeixinBot/fork) ![python](https://img.shields.io/badge/python-2.7%20&%203.6-ff69b4.svg)
 
 网页版微信API，包含终端版微信及微信机器人
 
-## Demo
-为了运行 `weixin.py` 示例脚本，你需要有安装 `qrcode` 包，你可以通过 `pip install qrcode` 来安装。
+## Contents
+* [Demo](#Demo)
+* [Web Weixin Pipeline](#Web-Weixin-Pipeline)
+* [Web Weixin API](#Web-Weixin-API)
+* [Discussion Group](#Discussion-Group)
+* [Recent Update](#Recent-Update)
 
-![1](screenshot/1.png)
+## Demo
+为了确保能正常运行示例脚本，请安装所需的第三方包。
+
+```
+pip install -r requirements.txt
+```
+
+注：下面演示的图片与功能可能不是最新的，具体请看源码。
+
+<div align=center>
+<img src="imgs/1.png" width="500" height="550"/>
+</div>
 
 按照操作指示在手机微信上扫描二维码然后登录，你可以选择是否开启自动回复模式。
 
-![2](screenshot/2.png)
+![2](imgs/2.png)
 
 开启自动回复模式后，如果接收到的是文字消息就会自动回复，包括群消息。
 
-![3](screenshot/3.png)
+![3](imgs/3.png)
 
-现在，名片，链接，动画表情和地址位置消息都可以正常接收。
+名片，链接，动画表情和地址位置消息。
 
-![4](screenshot/4.png)
+![4](imgs/4.png)
 
-![5](screenshot/5.png)
+![5](imgs/5.png)
 
-**目前支持的命令**：
-
-`->[昵称或ID]:[内容]` 给好友发送消息
-
-`m->[昵称或ID]:[文件路径]` 给好友发送文件中的内容
-
-![6](screenshot/6.png)
-
-`f->[昵称或ID]:[文件路径]` 给好友发送文件
-
-`i->[昵称或ID]:[图片路径]` 给好友发送图片
-
-`e->[昵称或ID]:[文件路径]` 给好友发送表情(jpg/gif)
-
-`quit` 退出程序
-
-![7](screenshot/7.png)
-
-注意，以上命令均不包含方括号。
+网页版上有的功能目前基本上都能支持。
 
 ## Web Weixin Pipeline
 
@@ -69,14 +66,7 @@
 |QRCode Scaned|
 +-------------+
 ```
-## Discussion Group
-如果你希望和 WeixinBot 的其他开发者交流，或者有什么问题和建议，欢迎大家加入微信群【Youth fed the dog】一起讨论。扫描下面的二维码添加机器人为好友，并回复【Aidog】获取入群链接。
 
-<div align=center>
-<img src="saved/qrcodes/groupQrcode.jpg" width="220" height="220" alt="join us"/>
-</div>
-
-注：这个不是群的二维码，是机器人拉你入群，记得回复机器人【Aidog】哦~ （secret code: Aidog）
 
 ## Web Weixin API
 
@@ -95,12 +85,29 @@ window.QRLogin.code = 200; window.QRLogin.uuid = "xxx"
 ```
 > 注：这里的appid就是在微信开放平台注册的应用的AppID。网页版微信有两个AppID，早期的是`wx782c26e4c19acffb`，在微信客户端上显示为应用名称为`Web微信`；现在用的是`wxeb7ec651dd0aefa9`，显示名称为`微信网页版`。
 
-![6](screenshot/8.jpg)
+<div align=center>
+<img src="imgs/8.jpg" width="320" height="211"/>
+</div>
+
+<br>
+| API | 绑定登陆（webwxpushloginurl） |
+| --- | --------- |
+| url | https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxpushloginurl |
+| method | GET |
+| params | **uin**: xxx |
+
+返回数据(String):
+```
+{'msg': 'all ok', 'uuid': 'xxx', 'ret': '0'}
+
+通过这种方式可以省掉扫二维码这步操作，更加方便
+```
 <br>
 
 | API | 生成二维码 |
 | --- | --------- |
 | url | https://login.weixin.qq.com/l/ `uuid` |
+| method | GET |
 <br>
 
 | API | 二维码扫描登录 |
@@ -299,7 +306,7 @@ window.redirect_uri="https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage?tic
 | API | synccheck |
 | --- | --------- |
 | protocol | https |
-| host | webpush.weixin.qq.com <br> webpush2.weixin.qq.com <br> webpush.wechat.com <br> webpush1.wechat.com <br> webpush2.wechat.com <br> webpush.wechatapp.com <br> webpush1.wechatapp.com |
+| host | webpush.weixin.qq.com <br> webpush.wx2.qq.com <br> webpush.wx8.qq.com <br> webpush.wx.qq.com <br> webpush.web2.wechat.com <br> webpush.web.wechat.com |
 | path | /cgi-bin/mmwebwx-bin/synccheck |
 | method | GET |
 | data | URL Encode |
@@ -393,6 +400,24 @@ selector:
 		"ErrMsg": ""
 	},
 	...
+}
+```
+
+| API | webwxrevokemsg |
+| --- | ------------ |
+| url | https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxrevokemsg |
+| method | POST |
+| data | JSON |
+| header | ContentType: application/json; charset=UTF-8 |
+| params | { <br> &nbsp;&nbsp;&nbsp;&nbsp; BaseRequest: { Uin: xxx, Sid: xxx, Skey: xxx, DeviceID: xxx }, <br> &nbsp;&nbsp;&nbsp;&nbsp; SvrMsgId: msg_id, <br> &nbsp;&nbsp;&nbsp;&nbsp; ToUserName: user_id, <br> &nbsp;&nbsp;&nbsp;&nbsp; ClientMsgId: local_msg_id <br>  } |
+
+返回数据(JSON):
+```
+{
+	"BaseResponse": {
+		"Ret": 0,
+		"ErrMsg": ""
+	}
 }
 ```
 
@@ -497,10 +522,10 @@ selector:
 | 1  | 文本消息 |
 | 3  | 图片消息 |
 | 34 | 语音消息 |
-| 37 | VERIFYMSG |
+| 37 | 好友确认消息 |
 | 40 | POSSIBLEFRIEND_MSG |
 | 42 | 共享名片 |
-| 43 | 视频通话消息 |
+| 43 | 视频消息 |
 | 47 | 动画表情 |
 | 48 | 位置消息 |
 | 49 | 分享链接 |
@@ -757,13 +782,17 @@ Content:
 	"收到红包，请在手机上查看"
 ```
 
-持续更新中 ...
 
-## Todo
-- [x] 发送图片或者文件功能
-- [ ] 主动给群聊发送消息
-- [ ] 建立群聊
-- [x] 群发消息
-- [ ] 补充更多的接口及完善文档
+## Discussion Group
+如果你希望和 WeixinBot 的其他开发者交流，或者有什么问题和建议，欢迎大家加入微信群【Youth fed the dog】一起讨论。扫描下面的二维码添加机器人为好友，并回复【Aidog】获取入群链接。
 
-P.S. 还有啥要补充的也可以在[issue #8](https://github.com/Urinx/WeixinBot/issues/8)下留言
+<div align=center>
+<img src="imgs/groupQrcode.jpg" width="220" height="220" alt="join us"/>
+</div>
+
+注：这个不是群的二维码，是机器人拉你入群，记得回复机器人【Aidog】哦~ （secret code: Aidog）
+
+## Recent Update
+
+- association_login
+	目前网页版微信已经可以脱离扫码，但是依然需要在客户端进行确认登录。

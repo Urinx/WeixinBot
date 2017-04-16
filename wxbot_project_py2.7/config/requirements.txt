@@ -1,0 +1,5 @@
+qrcode
+flask
+requests
+requests_toolbelt
+pymysql

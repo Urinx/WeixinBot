@@ -94,4 +94,8 @@ ENV/
 .idea
 
 *.pyc
-saved/qrcodes/qrcode.jpg
+wxbot_demo_py3/saved/
+wxbot_project_py2.7/tmp_data/
+wxbot_project_py2.7/wechat/wechat_js_backup/
+wxbot_project_py2.7/config/wechat.conf
+wxbot_project_py2.7/wiki/

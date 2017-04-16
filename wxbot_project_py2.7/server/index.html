@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>WeChat Bot Server</title>
+	<style type="text/css">
+	.container {
+		display: flex;
+	}
+	div.doc{
+		margin: auto;
+		text-align: left;
+	}
+	</style>
+</head>
+<body class="container">
+
+<div class="doc">
+<pre>
+	#####################
+	# WeChat Bot Server #
+	#####################
+
+
+## APIs
+
+- /qrcode
+  ------------------------
+  @brief      login qrcode
+  @method     get
+  @return     raw image
+  ------------------------
+
+- /runtime
+  -----------------------------
+  @brief      basic info
+  @method     get
+  @return     application/json
+              {
+                'ret': 0,
+                'runtime': '',
+                'total_size': '',
+                'db_size': '',
+                'msg_count': '',
+                'image_count': '',
+                'voice_count': '',
+                'video_count': '',
+              }
+  -----------------------------
+
+- /group_list
+  ------------------------
+  @brief      list groups
+  @method     get
+  ------------------------
+
+- /group_member_list/&lt;g_id&gt;
+  -----------------------------
+  @brief      list group member
+  @method     get
+  @param      g_id String
+  -----------------------------
+
+- /group_chat_log/&lt;g_name&gt;
+  -------------------------------
+  @brief      list group chat log
+  @method     get
+  @param      g_name String
+  -------------------------------
+
+- /upload
+  -------------------------------
+  @brief      upload a file
+  @method     get/post
+  @return     application/json
+              {
+                'ret': 0,
+                'msg': '',
+              }
+  -------------------------------
+
+- /send_msg/&lt;to&gt;/&lt;msg&gt;
+  -------------------------------------------
+  @brief      send message to user or gourp
+  @method     get
+  @param      to: String, user id or group id
+  @param      msg: String, words
+  @return     application/json
+              {
+                'ret': 0,
+              }
+  -------------------------------------------
+
+- /send_img/&lt;to&gt;/&lt;img&gt;
+  -------------------------------------------
+  @brief      send image to user or gourp
+  @method     get
+  @param      to: String, user id or group id
+  @param      img: String, image file name
+  @return     application/json
+              {
+                'ret': 0,
+              }
+  -------------------------------------------
+
+- /send_emot/&lt;to&gt;/&lt;emot&gt;
+  -------------------------------------------
+  @brief      send emotion to user or gourp
+  @method     get
+  @param      to: String, user id or group id
+  @param      emot: String, emotion file name
+  @return     application/json
+              {
+                'ret': 0,
+              }
+  -------------------------------------------
+
+- /send_file/&lt;to&gt;/&lt;file&gt;
+  -------------------------------------------
+  @brief      send emotion to user or gourp
+  @method     get
+  @param      to: String, user id or group id
+  @param      file: String, file name
+  @return     application/json
+              {
+                'ret': 0,
+              }
+  -------------------------------------------
+
+- /mass_send_msg
+  -------------------------------------------
+  @brief      send text to mass users or gourps
+  @method     post
+  @param      application/json
+              {
+                'to_list': [
+                  'group_id',
+                  ...
+                ],
+                'msg': '',
+              }
+  @return     application/json
+              {
+                'ret': 0,
+                'unsend_list': [],
+              }
+  -------------------------------------------
+
+- /mass_send_img
+  -------------------------------------------
+  @brief      send image to mass users or gourps
+  @method     post
+  @param      application/json
+              {
+                'to_list': [
+                  'group_id',
+                  ...
+                ],
+                'msg': '',
+              }
+  @return     application/json
+              {
+                'ret': 0,
+                'unsend_list': [],
+              }
+  -------------------------------------------
+
+- /mass_send_emot
+  -------------------------------------------
+  @brief      send emoticon to mass users or gourps
+  @method     post
+  @param      application/json
+              {
+                'to_list': [
+                  'group_id',
+                  ...
+                ],
+                'msg': '',
+              }
+  @return     application/json
+              {
+                'ret': 0,
+                'unsend_list': [],
+              }
+  -------------------------------------------
+
+- /mass_send_file
+  -------------------------------------------
+  @brief      send file to mass users or gourps
+  @method     post
+  @param      application/json
+              {
+                'to_list': [
+                  'group_id',
+                  ...
+                ],
+                'msg': '',
+              }
+  @return     application/json
+              {
+                'ret': 0,
+                'unsend_list': [],
+              }
+  -------------------------------------------
+</pre>
+</div>
+
+</body>
+</html>
+
