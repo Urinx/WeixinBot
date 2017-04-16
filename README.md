@@ -90,6 +90,7 @@ window.QRLogin.code = 200; window.QRLogin.uuid = "xxx"
 </div>
 
 <br>
+
 | API | 绑定登陆（webwxpushloginurl） |
 | --- | --------- |
 | url | https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxpushloginurl |
