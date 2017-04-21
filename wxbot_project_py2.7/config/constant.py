@@ -23,8 +23,8 @@ class Constant(object):
     
     SERVER_LOG_FORMAT = '%(asctime)s - %(pathname)s:%(lineno)d - %(name)s - %(levelname)s - %(message)s'
     SERVER_UPLOAD_ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
-    SERVER_PAGE_UPLOAD = 'Server/upload.html'
-    SERVER_PAGE_INDEX = 'Server/index.html'
+    SERVER_PAGE_UPLOAD = 'upload.html'
+    SERVER_PAGE_INDEX = 'index.html'
 
     RUN_RESULT_SUCCESS = '成功 %ds\n'
     RUN_RESULT_FAIL = '失败\n[*] 退出程序\n'
