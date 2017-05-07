@@ -585,6 +585,7 @@ class WXAPI(object):
         }
 
         r = requests.post(url, data=multipart_encoder, headers=headers)
+        dic = json.loads(r.text)  #修复无法发送Media消息BUG
         if dic['BaseResponse']['Ret'] == 0:
             return dic
         return None
