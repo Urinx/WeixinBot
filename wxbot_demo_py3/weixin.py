@@ -635,7 +635,7 @@ class WebWeixin(object):
     def webwxgetvoice(self, msgid):
         url = self.base_uri + \
             '/webwxgetvoice?msgid=%s&skey=%s' % (msgid, self.skey)
-        data = self._get(url)
+        data = self._get(url, api='webwxgetvoice')
         if data == '':
             return ''
         fn = 'voice_' + msgid + '.mp3'
@@ -1104,7 +1104,10 @@ class WebWeixin(object):
             request.add_header('Range', 'bytes=0-')
         try:
             response = urllib.request.urlopen(request, timeout=timeout) if timeout else urllib.request.urlopen(request)
-            data = response.read().decode('utf-8')
+            if api == 'webwxgetvoice' or api == 'webwxgetvideo':
+                data = response.read()
+            else:
+                data = response.read().decode('utf-8')
             logging.debug(url)
             return data
         except urllib.error.HTTPError as e:
