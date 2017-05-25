@@ -767,8 +767,11 @@ class WXAPI(object):
         @param      text  String
         @return     Bool: whether operation succeed
         """
-        dic = self.webwxsendmsg(text, user_id)
-        return dic['BaseResponse']['Ret'] == 0
+        try:
+            dic = self.webwxsendmsg(text, user_id)
+            return dic['BaseResponse']['Ret'] == 0
+        except:
+            return False
 
     def send_img(self, user_id, file_path):
         """

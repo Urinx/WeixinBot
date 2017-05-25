@@ -195,6 +195,8 @@ class WeChatMsgProcessor(object):
         if text == 'test_revoke': # 撤回消息测试
             dic = wechat.webwxsendmsg('这条消息将被撤回', uid)
             wechat.revoke_msg(dic['MsgID'], uid, dic['LocalID'])
+        elif text == 'reply':
+            wechat.send_text(uid, '自动回复')
 
 
     def handle_command(self, cmd, msg):
@@ -210,20 +212,22 @@ class WeChatMsgProcessor(object):
                 g_id = g['UserName']
 
         cmd = cmd.strip()
-        if cmd == 'test':
-            # wechat.send_file(g_id, 'test/Data/upload/shake.wav')
+        if cmd == 'runtime':
+            wechat.send_text(g_id, wechat.get_run_time())
+        elif cmd == 'test_sendimg':
             wechat.send_img(g_id, 'test/emotion/7.gif')
-        elif cmd == 'runtime':
-            wechat.webwxsendmsg(wechat.get_run_time(), g_id)
-        else:
+        elif cmd == 'test_sendfile':
+            wechat.send_file(g_id, 'test/Data/upload/shake.wav')
+        elif cmd == 'test_bot':
             # reply bot
             # ---------
-            # if wechat.bot:
-            #     r = wechat.bot.reply(cmd)
-            #     if r:
-            #         wechat.webwxsendmsg(r, g_id)
-            #     else:
-            #         pass
+            if wechat.bot:
+                r = wechat.bot.reply(cmd)
+                if r:
+                    wechat.send_text(g_id, r)
+                else:
+                    pass
+        elif cmd == 'test_emot':
             img_name = [
                 '0.jpg', '1.jpeg', '2.gif', '3.jpg', '4.jpeg',
                 '5.gif', '6.gif', '7.gif', '8.jpg', '9.jpg'
@@ -231,6 +235,8 @@ class WeChatMsgProcessor(object):
             name = img_name[int(time.time()) % 10]
             emot_path = os.path.join('test/emotion/', name)
             wechat.send_emot(g_id, emot_path)
+        else:
+            pass
 
     def check_schedule_task(self):
         # update group member list at 00:00 am every morning

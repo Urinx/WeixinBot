@@ -6,6 +6,7 @@ from wechat import WeChat
 from wechat.utils import *
 from wx_handler import WeChatMsgProcessor
 from wx_handler import Bot
+from wx_handler import SGMail
 from db import SqliteDB
 from db import MysqlDB
 from config import ConfigManager
@@ -44,6 +45,11 @@ flask_log_handler.setFormatter(formatter)
 logger.addHandler(flask_log_handler)
 app.logger.addHandler(flask_log_handler)
 
+# sendgrid mail
+sg_apikey = cm.get('sendgrid', 'api_key')
+from_email = cm.get('sendgrid', 'from_email')
+to_email = cm.get('sendgrid', 'to_email')
+sg = SGMail(sg_apikey, from_email, to_email)
 
 @app.route('/')
 def index():
@@ -260,6 +266,13 @@ while True:
         Log.error(traceback.format_exc())
     finally:
         wechat.stop()
+    
+    # send a mail to tell the wxbot is failing
+    subject = 'wxbot stop message'
+    log_file = open(eval(cm.get('handler_fileHandler', 'args'))[0], 'r')
+    mail_content = '<pre>' + str(wechat) + '\n\n-----\nLogs:\n-----\n\n' + ''.join(log_file.readlines()[-100:]) + '</pre>'
+    sg.send_mail(subject, mail_content, 'text/html')
+    log_file.close()
 
     if wechat.exit_code == 0:
         echo(Constant.MAIN_RESTART)

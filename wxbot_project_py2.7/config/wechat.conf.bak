@@ -35,6 +35,11 @@ user = root
 passwd = root
 database = wechat
 
+[sendgrid]
+api_key = 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
+from_email = wxbot@wechat.com
+to_email = xxx@example.com
+
 [loggers]
 keys = root,WeChat
 

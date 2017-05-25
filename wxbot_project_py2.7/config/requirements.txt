@@ -3,3 +3,4 @@ flask
 requests
 requests_toolbelt
 pymysql
+sendgrid

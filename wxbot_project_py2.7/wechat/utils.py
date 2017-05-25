@@ -231,6 +231,12 @@ def save_json(filename, data, dirName, mode='w+'):
     return fn
 
 
+def load_json(filepath):
+    Log.debug('load json: ' + filepath)
+    with open(filepath, 'r') as f:
+        return _decode_data(json.loads(f.read()))
+
+
 def pickle_save(data, file):
     """
     @brief      Use pickle to save python object into file

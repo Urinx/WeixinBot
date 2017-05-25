@@ -34,6 +34,7 @@ class WeChat(WXAPI):
             "[#] Skey: " + self.skey + "\n" + \
             "[#] DeviceId: " + self.device_id + "\n" + \
             "[#] PassTicket: " + self.pass_ticket + "\n" + \
+            "[#] Run Time: " + self.get_run_time() + '\n' + \
             "========================="
         return description
 
