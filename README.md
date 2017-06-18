@@ -479,7 +479,7 @@ selector:
 | :--: | --- |
 | 个人账号 | 以`@`开头，例如：`@xxx` |
 | 群聊 | 以`@@`开头，例如：`@@xxx` |
-| 公众号/服务号 | 以`@`开头，但其`VerifyFlag` & 8 != 0 <br><br> `VerifyFlag`: <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 一般公众号/服务号：8 <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 微信自家的服务号：24 <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 微信官方账号`微信团队`：56 |
+| 公众号/服务号 | 以`@`开头，但其`VerifyFlag` & 8 != 0 <br><br> `VerifyFlag`: <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 一般个人公众号/服务号：8 <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 一般企业的服务号：24 <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 微信官方账号`微信团队`：56 |
 | 特殊账号 | 像文件传输助手之类的账号，有特殊的ID，目前已知的有：<br> `filehelper`, `newsapp`, `fmessage`, `weibo`, `qqmail`, `tmessage`, `qmessage`, `qqsync`, `floatbottle`, `lbsapp`, `shakeapp`, `medianote`, `qqfriend`, `readerapp`, `blogapp`, `facebookapp`, `masssendapp`, `meishiapp`, `feedsapp`, `voip`, `blogappweixin`, `weixin`, `brandsessionholder`, `weixinreminder`, `officialaccounts`, `notification_messages`, `wxitil`, `userexperience_alarm`, `notification_messages` |
 <br>
 
