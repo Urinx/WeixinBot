@@ -21,13 +21,29 @@ class SqliteDB(object):
 
     def __init__(self, db_file):
         self.db_file = db_file
-        self.conn = sqlite3.connect(db_file, check_same_thread=False)
+        # self.conn = sqlite3.connect(db_file, check_same_thread=False)
         # use 8-bit strings instead of unicode string
         self.conn.text_factory = str
         # not return a tuple but a dict with column name as key
         self.conn.row_factory = _dict_factory
         # for thread-save
         self.lock = threading.Lock()
+
+    def set_conn(self):
+        self._conn = sqlite3.connect(self.db_file,check_same_thread=False)
+
+    @property
+    def conn(self):
+        try:
+            self._conn.execute('select 1;')
+            # check out conn
+        except (sqlite3.ProgrammingError,AttributeError):
+            # Cannot operate on a closed database
+            self.set_conn()
+
+        finally:
+            return self._conn
+
 
     def create_table(self, table, cols):
         """
