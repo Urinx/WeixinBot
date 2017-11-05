@@ -18,20 +18,18 @@
 ├── docker
 │   ├── Dockerfile
 │   └── README.md
-├── server
+├── flask_templates
 │   ├── index.html
 │   └── upload.html
-├── tmp_data
 ├── wechat
 │   ├── __init__.py
 │   ├── utils.py
-│   ├── wechat.py
 │   ├── wechat_apis.py
-│   └── wechat_js_backup
-│       └── index_40649b7.js
+│   └── wechat.py
 ├── weixin_bot.py
 └── wx_handler
     ├── __init__.py
     ├── bot.py
+    ├── sendgrid_mail.py
     └── wechat_msg_processor.py
 ```
